@@ -1,0 +1,171 @@
+#############################################################################
+# 0 ─ REPLICAS (pod único por padrão; script pode ajustar)
+#############################################################################
+statefulset:
+  replicas: 1
+  # Desativando hostNetwork para evitar conflitos de portas
+  hostNetwork: false
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: false
+
+#############################################################################
+# 1 ─ RECURSOS & PROBES
+#############################################################################
+resources:
+  cpu:    { cores: 1 }
+  memory: { container: { max: 2Gi } }
+
+livenessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 5
+
+readinessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 5
+
+#############################################################################
+# 2 ─ TLS (ClusterIssuer/selfsigned)
+#############################################################################
+tls:
+  enabled: true
+  certs:
+    internal:
+      issuerRef: { name: selfsigned, kind: ClusterIssuer }
+      caEnabled: true
+      applyInternalDNSNames: true
+    external:
+      issuerRef: { name: selfsigned, kind: ClusterIssuer }
+      caEnabled: true
+
+#############################################################################
+# 3 ─ LISTENERS (portas e nomes exclusivos)
+#############################################################################
+listeners:
+  admin:
+    port: 9644
+    external:
+      default:
+        port: 9645
+        tls:
+          cert: external
+        advertisedPorts:
+        - 31644
+    tls:
+      cert: default
+      requireClientAuth: false
+  kafka:
+    port: 9093
+    authenticationMethod: none
+    tls: { enabled: false }
+    external:
+      default:
+        port: 31094  # Alterado para 31094 (dentro da faixa NodePort)
+        advertisedPorts:
+        - 31094      # Alterado para corresponder
+        tls: { enabled: false }
+        authenticationMethod: none
+  rpc:
+    port: 33145
+
+  http:
+    enabled: true
+    port: 8082
+    kafkaEndpoint: default
+    authenticationMethod: none
+    tls:
+      cert: default
+      requireClientAuth: false
+    external:
+      default:
+        port: 31083  # Alterado para 31083 (dentro da faixa NodePort)
+        advertisedPorts:
+          - 31083    # Alterado para corresponder
+        tls:
+          # enabled: true
+          cert: external
+          requireClientAuth: false
+        authenticationMethod: none
+  schemaRegistry:
+    enabled: true
+    port: 8081
+    kafkaEndpoint: default
+    authenticationMethod: none
+    tls:
+      cert: default
+      requireClientAuth: false
+    external:
+      default:
+        port: 31081  # Alterado para 31081 (dentro da faixa NodePort)
+        advertisedPorts:
+        - 31081      # Alterado para corresponder
+        tls:
+          cert: external
+          requireClientAuth: false
+        authenticationMethod: none
+
+#############################################################################
+# 4 ─ SERVICE & EXPOSIÇÃO
+#############################################################################
+external:
+  enabled: true
+  # Usando NodePort para melhor compatibilidade com Rancher Desktop
+  type: NodePort
+  domain: redpanda.rd
+  service:
+    enabled: true
+    annotations:
+      # Deixamos o Kubernetes alocar as portas automaticamente
+      service.kubernetes.io/allocate-loadbalancer-nodeports: "true"
+
+service:
+  internal: {}
+  external:
+    enabled: true
+
+#############################################################################
+# 5 ─ STORAGE
+#############################################################################
+storage:
+  persistentVolume:
+    size: 10Gi
+    storageClass: local-path
+
+#############################################################################
+# 6 ─ MONITORAMENTO
+#############################################################################
+monitoring:
+  enabled: true
+  scrapeInterval: 30s
+  labels:
+    release: kube-prometheus
+
+#############################################################################
+# 7 ─ CONSOLE (Ingress Traefik)
+#############################################################################
+console:
+  enabled: true
+  service:
+    type: ClusterIP
+    port: 8080
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    hosts:
+      - host: redpanda.rd
+        paths:
+          - path: /
+            pathType: Prefix
+  livenessProbe:
+    httpGet: { path: /health, port: 8080 }
+    initialDelaySeconds: 10
+    periodSeconds: 20
+  readinessProbe:
+    httpGet: { path: /health, port: 8080 }
+    initialDelaySeconds: 5
+    periodSeconds: 10

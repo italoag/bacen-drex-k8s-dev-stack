@@ -1,0 +1,30 @@
+# redis-hostnet.yaml
+
+## Deploy standalone Redis
+architecture: standalone
+
+## Desabilita replica/sentinel
+cluster:
+  enabled: false
+  slaveCount: 0
+
+## Persistência (ajuste conforme quiser)
+master:
+  persistence:
+    enabled: true
+    size: 1Gi
+
+## Serviço interno (nenhuma exposição extra via Service)
+service:
+  type: ClusterIP
+  port: 6379
+
+## Recursos (opcional)
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+

@@ -1,0 +1,9 @@
+## postgresql-lb-values.yaml
+service:
+  type: LoadBalancer
+  port: 5432              # porta exposta externamente
+  targetPort: 5432
+  # IP que você quer “reservar” no pool do MetalLB / servicelb
+  loadBalancerIP: 192.168.64.2
+  externalTrafficPolicy: Local
+

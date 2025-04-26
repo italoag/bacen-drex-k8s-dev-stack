@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node1-rpc
+  namespace: blockchain
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node1-0
+  ports:
+    - name: rpc-http
+      port: 8545
+      targetPort: 8545
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node2-rpc
+  namespace: blockchain
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node2-0
+  ports:
+    - name: rpc-http
+      port: 8545
+      targetPort: 8545
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node3-rpc
+  namespace: blockchain
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node3-0
+  ports:
+    - name: rpc-http
+      port: 8545
+      targetPort: 8545
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node1-ws
+  namespace: blockchain
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node1-0
+  ports:
+    - name: rpc-ws
+      port: 8546
+      targetPort: 8546
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node2-ws
+  namespace: blockchain
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node2-0
+  ports:
+    - name: rpc-ws
+      port: 8546
+      targetPort: 8546
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node3-ws
+  namespace: blockchain
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node3-0
+  ports:
+    - name: rpc-ws
+      port: 8546
+      targetPort: 8546
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node1-graphql
+  namespace: blockchain
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node1-0
+  ports:
+    - name: graphql-http
+      port: 8547
+      targetPort: 8547
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node2-graphql
+  namespace: blockchain
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node2-0
+  ports:
+    - name: graphql-http
+      port: 8547
+      targetPort: 8547
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node3-graphql
+  namespace: blockchain
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node3-0
+  ports:
+    - name: graphql-http
+      port: 8547
+      targetPort: 8547
+      protocol: TCP
