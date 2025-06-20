@@ -1,0 +1,42 @@
+# Configuração para geração do genesis da rede Besu usando QBFT
+consensus: qbft
+chainId: 2025
+blockPeriod: 2
+epochLength: 30000
+difficulty: 1
+gasLimit: '0x1fffffffffffff'
+coinbase: '0x0000000000000000000000000000000000000000'
+validators: 6        # Número de validadores
+members: 1           # Número de membros (se aplicável)
+bootnodes: 1         # Número de bootnodes
+alloc: {}
+quickstartDevAccounts: false
+
+besu_config:
+  data-path: /var/lib/besu
+  network:
+    p2p:
+      advertised-host: ""
+      port: 30303
+      private-key-file: /etc/besu/nodekey
+    rpc:
+      http:
+        enabled: true
+        port: 8545
+        cors-origins: ["*"]
+        api: "eth,net,qbft,admin,debug,web3"
+      ws:
+        enabled: true
+        port: 8546
+        cors-origins: ["*"]
+        api: "eth,net,qbft,admin,debug,web3"
+  metrics:
+    enabled: true
+    host: 0.0.0.0
+    port: 9545
+    cors-origins: ["*"]
+  logging:
+    level: INFO
+    file:
+      enabled: false
+      filename: besu.log

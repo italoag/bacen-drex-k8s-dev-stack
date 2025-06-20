@@ -1,14 +1,8 @@
-# Template para geração dinâmica via envsubst e shell
-# Este arquivo será gerado dinamicamente pelo script de deploy
-
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: besu-rpc-route
   namespace: paladin
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
-    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
 spec:
   entryPoints:
     - web
@@ -17,14 +11,11 @@ spec:
     - match: Host(`rpc-besu.cluster.eita.cloud`)
       kind: Rule
       services:
-        - name: besu-node1-rpc
-          port: 8545
-        - name: besu-node2-rpc
-          port: 8545
-        - name: besu-node3-rpc
-          port: 8545
+        - name: besu-rpc-lb@kubernetescrd
+      middlewares:
+        - name: besu-retry-middleware
   tls:
-    secretName: rpc-besu-tls
+    certResolver: default
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -39,17 +30,12 @@ spec:
     - match: Host(`ws-besu.cluster.eita.cloud`)
       kind: Rule
       services:
-        - name: besu-node1-ws
-          port: 8546
-        - name: besu-node2-ws
-          port: 8546
-        - name: besu-node3-ws
-          port: 8546
+        - name: besu-ws-lb@kubernetescrd
       middlewares:
         - name: besu-ws-middleware
         - name: besu-retry-middleware
   tls:
-    secretName: ws-besu-tls
+    certResolver: default
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -64,13 +50,8 @@ spec:
     - match: Host(`graphql-besu.cluster.eita.cloud`)
       kind: Rule
       services:
-        - name: besu-node1-graphql
-          port: 8547
-        - name: besu-node2-graphql
-          port: 8547
-        - name: besu-node3-graphql
-          port: 8547
+        - name: besu-graphql-lb@kubernetescrd
       middlewares:
         - name: besu-retry-middleware
   tls:
-    secretName: graphql-besu-tls
+    certResolver: default

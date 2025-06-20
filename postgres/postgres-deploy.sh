@@ -15,7 +15,7 @@ TIMEOUT=300s                    # timeout helm install/upgrade
 # Exporte antes de rodar:   export POSTGRES_PASSWORD='SenhaForte'
 PASS="${POSTGRES_PASSWORD:-}"
 if [[ -z "$PASS" ]]; then
-  echo "❌  Defina a variável de ambiente POSTGRES_PASSWORD antes de executar."
+  echo "❌ Defina a variável de ambiente POSTGRES_PASSWORD antes de executar."
   exit 1
 fi
 
@@ -100,9 +100,9 @@ retry 20 kubectl -n "$NS" wait pod -l app.kubernetes.io/instance="$RELEASE" \
 if command -v psql >/dev/null; then
   log "Testando conexão em localhost:5432 …"
   if PGPASSWORD="$PASS" psql -h localhost -p 5432 -U postgres -d postgres -c '\q' >/dev/null 2>&1; then
-    log "✅  PostgreSQL aceita conexão!"
+    log "✅ PostgreSQL aceita conexão!"
   else
-    warn "❌  Falha ao conectar no PostgreSQL."
+    warn "❌ Falha ao conectar no PostgreSQL."
   fi
 else
   warn "psql não encontrado; pulei teste de conexão."

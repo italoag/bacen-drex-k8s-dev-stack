@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: paladin2-ui-ingress
+  namespace: paladin
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`paladin2.cluster.eita.cloud`) && PathPrefix(`/ui`)
+      kind: Rule
+      middlewares:
+        - name: my-basic-auth
+      services:
+        - name: paladin-node2
+          port: 8548
+  tls:
+    secretName: paladin2-tls
+

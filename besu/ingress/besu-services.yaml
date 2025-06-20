@@ -1,10 +1,3 @@
-# Template para geração dinâmica via envsubst e shell
-# Este arquivo será gerado dinamicamente pelo script de deploy
-
-# Para cada node, o script irá gerar um bloco como este:
-# (Exemplo para RPC, WS e GraphQL)
-
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -13,6 +6,34 @@ metadata:
 spec:
   selector:
     statefulset.kubernetes.io/pod-name: besu-node1-0
+  ports:
+    - name: rpc-http
+      port: 8545
+      targetPort: 8545
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node2-rpc
+  namespace: paladin
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node2-0
+  ports:
+    - name: rpc-http
+      port: 8545
+      targetPort: 8545
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node3-rpc
+  namespace: paladin
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node3-0
   ports:
     - name: rpc-http
       port: 8545
@@ -36,34 +57,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: besu-node1-graphql
-  namespace: paladin
-spec:
-  selector:
-    statefulset.kubernetes.io/pod-name: besu-node1-0
-  ports:
-    - name: graphql
-      port: 8547
-      targetPort: 8547
-      protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: besu-node2-rpc
-  namespace: paladin
-spec:
-  selector:
-    statefulset.kubernetes.io/pod-name: besu-node2-0
-  ports:
-    - name: rpc-http
-      port: 8545
-      targetPort: 8545
-      protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
   name: besu-node2-ws
   namespace: paladin
 spec:
@@ -73,34 +66,6 @@ spec:
     - name: rpc-ws
       port: 8546
       targetPort: 8546
-      protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: besu-node2-graphql
-  namespace: paladin
-spec:
-  selector:
-    statefulset.kubernetes.io/pod-name: besu-node2-0
-  ports:
-    - name: graphql
-      port: 8547
-      targetPort: 8547
-      protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: besu-node3-rpc
-  namespace: paladin
-spec:
-  selector:
-    statefulset.kubernetes.io/pod-name: besu-node3-0
-  ports:
-    - name: rpc-http
-      port: 8545
-      targetPort: 8545
       protocol: TCP
 ---
 apiVersion: v1
@@ -120,13 +85,41 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: besu-node1-graphql
+  namespace: paladin
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node1-0
+  ports:
+    - name: graphql-http
+      port: 8547
+      targetPort: 8547
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: besu-node2-graphql
+  namespace: paladin
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: besu-node2-0
+  ports:
+    - name: graphql-http
+      port: 8547
+      targetPort: 8547
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: besu-node3-graphql
   namespace: paladin
 spec:
   selector:
     statefulset.kubernetes.io/pod-name: besu-node3-0
   ports:
-    - name: graphql
+    - name: graphql-http
       port: 8547
       targetPort: 8547
       protocol: TCP

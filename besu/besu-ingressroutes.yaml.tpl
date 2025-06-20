@@ -5,7 +5,7 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: besu-rpc-route
-  namespace: paladin
+  namespace: ${NAMESPACE}
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
     traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
@@ -14,7 +14,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: Host(`rpc-besu.cluster.eita.cloud`)
+    - match: Host(`rpc-besu.${DOMAIN}`)
       kind: Rule
       services:
         - name: besu-node1-rpc
@@ -30,13 +30,13 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: besu-ws-route
-  namespace: paladin
+  namespace: ${NAMESPACE}
 spec:
   entryPoints:
     - web
     - websecure
   routes:
-    - match: Host(`ws-besu.cluster.eita.cloud`)
+    - match: Host(`ws-besu.${DOMAIN}`)
       kind: Rule
       services:
         - name: besu-node1-ws
@@ -55,13 +55,13 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: besu-graphql-route
-  namespace: paladin
+  namespace: ${NAMESPACE}
 spec:
   entryPoints:
     - web
     - websecure
   routes:
-    - match: Host(`graphql-besu.cluster.eita.cloud`)
+    - match: Host(`graphql-besu.${DOMAIN}`)
       kind: Rule
       services:
         - name: besu-node1-graphql

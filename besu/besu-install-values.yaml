@@ -1,0 +1,95 @@
+---
+# Configuração do Besu para ambiente de desenvolvimento com QBFT
+numValidators: 4
+
+# Utilizar ChainID definido no genesis
+chainId: 22012022
+
+# Recursos - valores reduzidos para ambiente de desenvolvimento
+validator:
+  resources:
+    requests:
+      cpu: 300m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  persistence:
+    enabled: true
+    size: 5Gi
+
+# Bootnodes não são necessários para a rede local
+bootnode:
+  enabled: false
+
+# Permissionamento entre nós
+permissioning:
+  enabled: true
+  nodesConfigMap:
+    name: "besu-nodes-allowlist"
+    key: "nodes-allowlist.json"
+
+# Configurações de rede privada
+privacy:
+  enabled: false
+
+# Genesis
+genesis:
+  # Usar o ConfigMap criado anteriormente
+  useConfigMap: true
+  configMapName: "besu-genesis"
+
+# Configurações de consenso QBFT
+besu:
+  image:
+    repository: hyperledger/besu
+    tag: "24.12.2"
+  
+  # Argumentos do Besu para todos os nós
+  args:
+    network-id: 22012022
+    qbft-enabled: true
+    qbft-validator-address-file: "/opt/besu/keys/key.pub"
+    qbft-validator-private-key-file: "/opt/besu/keys/key"
+    min-gas-price: 0
+    host-allowlist: "*"
+    rpc-http-enabled: true
+    rpc-http-api: "ETH,NET,QBFT,WEB3,ADMIN,DEBUG,PERM,TXPOOL,TRACE"
+    rpc-http-cors-origins: "*"
+    rpc-ws-enabled: true
+    rpc-ws-api: "ETH,NET,QBFT,WEB3,ADMIN,DEBUG,PERM,TXPOOL,TRACE"
+    metrics-enabled: false
+    logging: "DEBUG"
+
+# Serviços
+service:
+  # Expor porta RPC HTTP
+  rpcHttpPort: 8545
+  # Expor porta RPC WebSockets
+  rpcWsPort: 8546
+  # Não expor o P2P externamente
+  p2pPort: 30303
+
+# Armazenamento para nós validadores
+storage:
+  pvcSizeLimit: 2Gi
+
+# Monitoramento - desabilitado para economizar recursos
+prometheus:
+  enabled: false
+grafana:
+  enabled: false
+# Configuração para usar ConfigMaps de chaves para os validadores
+validators:
+  validator1:
+    keysConfigMap:
+      name: besu-validator1-keys
+  validator2:
+    keysConfigMap:
+      name: besu-validator2-keys
+  validator3:
+    keysConfigMap:
+      name: besu-validator3-keys
+  validator4:
+    keysConfigMap:
+      name: besu-validator4-keys

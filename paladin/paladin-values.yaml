@@ -1,0 +1,4 @@
+# custom-values.yaml
+devnet:
+  besuGenesis:
+    chainID: 2025

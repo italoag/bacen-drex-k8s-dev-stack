@@ -5,7 +5,7 @@ apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: besu-ws-middleware
-  namespace: paladin
+  namespace: ${NAMESPACE}
 spec:
   headers:
     customRequestHeaders:
@@ -16,7 +16,7 @@ apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: besu-retry-middleware
-  namespace: paladin
+  namespace: ${NAMESPACE}
 spec:
   retry:
     attempts: 3
