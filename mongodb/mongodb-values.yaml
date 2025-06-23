@@ -1,10 +1,14 @@
 ###############################################################################
-# mongodb-values.yaml  –  Bitnami MongoDB 16.5.1 (stand-alone)                #
+# mongodb-values.yaml  –  Bitnami MongoDB 16.5.23 (stand-alone)               #
 ###############################################################################
 
 # --------------------------------------------------------------------------- #
 # 1)  Arquitetura                                                             #
 # --------------------------------------------------------------------------- #
+# image:
+#   registry: docker.io
+#   repository: mongodb/mongodb-community-server
+#   tag: 8.0.8-ubi8
 architecture: standalone            # um único Pod (sem ReplicaSet/Sharding)
 
 # --------------------------------------------------------------------------- #
