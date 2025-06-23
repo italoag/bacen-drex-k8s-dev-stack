@@ -9,7 +9,7 @@ RELEASE=postgres                # nome do Helm release
 NS=database                     # namespace a usar / criar
 VALUES=postgresql-values.yaml   # arquivo de valores
 CHART=oci://registry-1.docker.io/bitnamicharts/postgresql
-TIMEOUT=300s                    # timeout helm install/upgrade
+TIMEOUT=600s                    # timeout helm install/upgrade
 
 # Senha do super-user Postgres.  NÃO versionar!
 # Exporte antes de rodar:   export POSTGRES_PASSWORD='SenhaForte'
@@ -70,10 +70,10 @@ fi
 # StatefulSet gerado → <release>-postgresql
 STS_NAME="$(kubectl get sts -l app.kubernetes.io/instance=$RELEASE -n $NS -o jsonpath='{.items[0].metadata.name}')"
 
-log "Aplicando patch hostNetwork/dnsPolicy no StatefulSet ${STS_NAME}…"
+log "Aplicando patch hostNetwork/dnsPolicy e updateStrategy no StatefulSet ${STS_NAME}…"
+# Aplicar patches usando kubectl patch com type=merge é mais simples e confiável
 kubectl patch statefulset "$STS_NAME" -n "$NS" --type='merge' -p '{
   "spec": {
-    "updateStrategy": { "type": "Recreate" },
     "template": {
       "spec": {
         "hostNetwork": true,
@@ -83,6 +83,15 @@ kubectl patch statefulset "$STS_NAME" -n "$NS" --type='merge' -p '{
   }
 }'
 
+# The updateStrategy needs to be set in a separate step
+kubectl patch statefulset "$STS_NAME" -n "$NS" --type='json' -p '[
+  {"op": "replace", "path": "/spec/updateStrategy", "value": {"type": "OnDelete"}}
+]'
+
+# Para garantir que os pods sejam recriados com hostNetwork habilitado
+log "Deletando pod para forçar recriação com hostNetwork habilitado..."
+kubectl delete pod -n "$NS" -l app.kubernetes.io/instance="$RELEASE" --wait=true
+
 log "Reiniciando rollout…"
 kubectl rollout restart statefulset/"$STS_NAME" -n "$NS"
 
@@ -90,7 +99,8 @@ kubectl rollout restart statefulset/"$STS_NAME" -n "$NS"
 # 4 ─ ESPERA DE READINESS
 ###########################################
 log "Aguardando pod ficar Ready…"
-retry 20 kubectl -n "$NS" rollout status statefulset/"$STS_NAME"
+# Não usa rollout status para OnDelete strategy
+log "Aguardando até o pod estar pronto..."
 retry 20 kubectl -n "$NS" wait pod -l app.kubernetes.io/instance="$RELEASE" \
                --for=condition=ready --timeout="$TIMEOUT"
 
