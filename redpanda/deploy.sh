@@ -9,7 +9,7 @@ CHART=redpanda/redpanda
 TIMEOUT=600s # Aumentado para dar mais tempo para o deploy
 
 ISSUER=selfsigned          # ClusterIssuer
-DOMAIN=redpanda.rd         # host público
+DOMAIN=redpanda.localhost  # host público
 BROKER_PLAIN=31094         # Porta NodePort para PLAINTEXT
 BROKER_TLS=31095           # Porta NodePort para TLS
 

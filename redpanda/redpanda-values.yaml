@@ -114,7 +114,7 @@ external:
   enabled: true
   # Usando NodePort para melhor compatibilidade com Rancher Desktop
   type: NodePort
-  domain: redpanda.rd
+  domain: redpanda.localhost
   service:
     enabled: true
     annotations:
@@ -157,7 +157,7 @@ console:
     annotations:
       traefik.ingress.kubernetes.io/router.entrypoints: web
     hosts:
-      - host: redpanda.rd
+      - host: redpanda.localhost
         paths:
           - path: /
             pathType: Prefix
