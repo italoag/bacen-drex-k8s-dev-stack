@@ -1,0 +1,92 @@
+server:
+  # Configurações para o servidor Vault
+  dataStorage:
+    size: 5Gi
+    storageClass: null
+  
+  # Habilitar hostNetwork para acesso direto
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+  
+  # Configuração de High Availability (HA)
+  ha:
+    enabled: false
+  
+  # Configuração de selagem
+  # Em ambiente de dev, usamos Shamir para simplificar
+  seal:
+    type: "shamir"
+  
+  # Interface web habilitada
+  ui:
+    enabled: true
+    serviceType: "NodePort"
+    serviceNodePort: 30800
+  
+  # Desabilitar modo dev
+  # Isso garantirá que o Vault não perca dados quando o pod for reiniciado
+  dev:
+    enabled: false
+  
+  # Configurações de log para facilitar o debug
+  logLevel: "info"
+  logFormat: "standard"
+  
+  # Configuração standalone para ambiente de desenvolvimento
+  standalone:
+    enabled: true
+    config: |
+      ui = true
+      
+      listener "tcp" {
+        address = "0.0.0.0:8200"
+        tls_disable = true
+      }
+      
+      storage "file" {
+        path = "/vault/data"
+      }
+      
+      # Configuração de API e cluster
+      api_addr = "http://$(POD_IP):8200"
+      cluster_addr = "http://$(POD_IP):8201"
+
+  extraEnvironmentVars:
+    VAULT_ADDR: http://127.0.0.1:8200
+    # Define variáveis de ambiente úteis para o ponto de vista do pod
+    POD_IP: "$(POD_IP)"
+  
+  # Estas variáveis são resolvidas pelo pod
+  extraSecretEnvironmentVars: []
+  
+  # Aumentar o tempo de espera do readiness probe para dar tempo ao Vault inicializar
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 3
+  
+  # Recursos
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  
+  # Configurações de serviço
+  service:
+    enabled: true
+    # Na preferência de hostNetwork, mas mantemos o nodePort como backup
+    type: NodePort
+    nodePort: 30820
+  
+# Configurações globais
+global:
+  tlsDisable: true  # Para ambiente de desenvolvimento
+  
+injector:
+  enabled: true
