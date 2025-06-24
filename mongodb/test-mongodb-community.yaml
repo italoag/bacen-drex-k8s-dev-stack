@@ -1,0 +1,81 @@
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: mongodb-test
+  namespace: database
+spec:
+  members: 1
+  type: ReplicaSet
+  version: "8.0.8"
+  security:
+    authentication:
+      modes: ["SCRAM"]
+  users:
+    - name: admin
+      db: admin
+      passwordSecretRef:
+        name: mongodb-admin-password
+      roles:
+        - name: clusterAdmin
+          db: admin
+        - name: userAdminAnyDatabase
+          db: admin
+        - name: readWriteAnyDatabase
+          db: admin
+        - name: dbAdminAnyDatabase
+          db: admin
+      scramCredentialsSecretName: admin-scram-credentials
+  additionalMongodConfig:
+    storage.wiredTiger.engineConfig.journalCompressor: zlib
+  statefulSet:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: mongod
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              readinessProbe:
+                exec:
+                  command:
+                    - mongosh
+                    - --eval
+                    - "db.runCommand('ping')"
+                failureThreshold: 40
+                initialDelaySeconds: 30
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 5
+              livenessProbe:
+                exec:
+                  command:
+                    - mongosh
+                    - --eval
+                    - "db.runCommand('ping')"
+                failureThreshold: 3
+                initialDelaySeconds: 60
+                periodSeconds: 30
+                successThreshold: 1
+                timeoutSeconds: 10
+            - name: mongodb-agent
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              readinessProbe:
+                exec:
+                  command:
+                    - /opt/scripts/readinessprobe
+                failureThreshold: 40
+                initialDelaySeconds: 5
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 5
