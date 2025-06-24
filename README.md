@@ -16,7 +16,7 @@ Cada pasta abaixo representa um componente. Siga a ordem sugerida para evitar de
 
 ---
 
-## 1. **besu**
+## 1. **Hyperledger Besu**
 
 ### Descrição
 
@@ -41,7 +41,7 @@ cd besu
 
 ---
 
-## 2. **kafka**
+## 2. **Apache Kafka (Strinzi)**
 
 ### Descrição
 
@@ -64,7 +64,7 @@ cd kafka
 
 ---
 
-## 3. **mongodb**
+## 3. **MongoDB Community**
 
 ### Descrição
 
@@ -88,7 +88,7 @@ cd mongodb
 
 ---
 
-## 4. **paladin**
+## 4. **LF Descentralized Trust Paladin**
 
 ### Descrição
 
@@ -96,16 +96,35 @@ Manifests de ingress, middlewares e valores para o serviço Paladin.
 
 ### Deployment
 
-- Aplique os arquivos YAML conforme necessário:
+O deploy do Paladin pode ser realizado de forma automatizada utilizando o script `paladin-install.sh` presente na pasta `paladin`. O script executa todos os passos necessários para instalação dos CRDs, cert-manager, operador Paladin e, opcionalmente, aplica os ingressos, ingressroutes de UI e middlewares.
 
-  ```sh
-  kubectl apply -f paladin/paladin1-ingress.yaml
-  kubectl apply -f paladin/paladin2-ingress.yaml
-  kubectl apply -f paladin/paladin3-ingress.yaml
-  # E demais arquivos conforme o ambiente
-  ```
+#### Instalação padrão (hostNetwork, sem ingress):
 
-- Edite `paladin-values.yaml` para customizações.
+```sh
+cd paladin
+chmod +x paladin-install.sh
+./paladin-install.sh
+```
+
+#### Instalação com ingressos, ingressroutes de UI e middlewares:
+
+```sh
+cd paladin
+chmod +x paladin-install.sh
+./paladin-install.sh --with-ingress
+```
+
+O script irá:
+
+- Instalar os CRDs do Paladin
+- Instalar e verificar o cert-manager
+- Instalar o operador Paladin
+- (Opcional) Aplicar todos os ingressos, ingressroutes de UI e middlewares necessários
+
+Para customizar a rede Paladin, edite o arquivo de valores:
+`paladin/paladin-values.yaml`
+
+---
 
 ### Validação
 
@@ -118,7 +137,7 @@ Manifests de ingress, middlewares e valores para o serviço Paladin.
 
 ---
 
-## 5. **postgres**
+## 5. **PostgreSQL**
 
 ### Descrição
 
@@ -144,7 +163,7 @@ cd postgres
 
 ---
 
-## 6. **redis**
+## 6. **Redis**
 
 ### Descrição
 
@@ -170,7 +189,7 @@ cd redis
 
 ---
 
-## 7. **redpanda**
+## 7. **RedPanda**
 
 ### Descrição
 
@@ -196,7 +215,7 @@ cd redpanda
 
 ---
 
-## 8. **vault**
+## 8. **Hashicorp Vault**
 
 ### Descrição
 
@@ -220,7 +239,7 @@ cd vault
 
 ---
 
-## 9. **firefly**
+## 9. **Hyperledger Firefly**
 
 ### Descrição
 
