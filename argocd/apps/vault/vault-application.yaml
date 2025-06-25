@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  source:
+    repoURL: https://github.com/eitatech/deployments.git
+    path: argocd/apps/vault
+    targetRevision: main
+
+    helm:
+      valuesFiles:
+      - vault-values.yaml
+  
+  # O resto da política de sincronização permanece o mesmo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
