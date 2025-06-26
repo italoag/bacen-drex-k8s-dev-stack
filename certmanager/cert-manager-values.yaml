@@ -1,0 +1,27 @@
+# Valores personalizados para a instalação do cert-manager
+# Para uso futuro se precisar de configurações adicionais
+
+# Configurações globais
+global:
+  logLevel: 2
+
+# Configurações do cert-manager
+installCRDs: true
+
+# Recursos
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Configurações adicionais para ambientes de produção
+# webhook:
+#   hostNetwork: false
+# podDnsPolicy: "None"
+# podDnsConfig:
+#   nameservers:
+#     - "8.8.8.8"
+#     - "1.1.1.1"
