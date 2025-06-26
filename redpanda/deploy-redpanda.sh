@@ -9,9 +9,10 @@ CHART=redpanda/redpanda
 TIMEOUT=600s # Aumentado para dar mais tempo para o deploy
 
 ISSUER=selfsigned          # ClusterIssuer
-DOMAIN=redpanda.localhost  # host público
+DOMAIN=redpanda.rd          # host público
 BROKER_PLAIN=31094         # Porta NodePort para PLAINTEXT (atualizada)
 BROKER_TLS=31095           # Porta NodePort para TLS (atualizada)
+LOCAL_IP=127.0.0.1
 
 log(){ printf '\e[32m[INFO]\e[0m  %s\n' "$*"; }
 err(){ printf '\e[31m[ERR ]\e[0m  %s\n' "$*"; }
@@ -47,7 +48,13 @@ retry 20 kubectl -n "$NS" wait pod -l app.kubernetes.io/name=console --for=condi
 
 ### 5 ─ Descobre IP público e NodePort
 log "Obtendo informações para conexão..."
-NODE_IP=$(kubectl get node -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+# Usa ExternalIP em vez de InternalIP para acessibilidade externa
+NODE_IP=$(kubectl get node -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+# Fallback para InternalIP se ExternalIP não estiver disponível
+if [ -z "$NODE_IP" ]; then
+  NODE_IP=$(kubectl get node -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+  log "Nenhum IP externo encontrado, usando IP interno: $NODE_IP"
+fi
 # Descobrir NodePort para broker externo
 NODEPORT_BROKER=$(kubectl -n "$NS" get svc "$RELEASE"-external -o jsonpath='{.spec.ports[?(@.name=="kafka-default")].nodePort}')
 
@@ -124,8 +131,15 @@ fi
 
 ### 8 ─ Verifica DNS
 log "Verificando resolução de DNS para $DOMAIN..."
-if ping -c1 "$DOMAIN" &>/dev/null; then
-  log "DNS para $DOMAIN está OK!"
+DNS_CHECK=$(ping -c1 "$DOMAIN" 2>/dev/null || echo "Failed")
+if [[ "$DNS_CHECK" != "Failed" ]]; then
+  RESOLVED_IP=$(ping -c1 "$DOMAIN" | grep PING | awk -F '[()]' '{print $2}')
+  log "DNS para $DOMAIN está OK! (Resolving to $RESOLVED_IP)"
+  
+  if [[ "$RESOLVED_IP" != "$NODE_IP" ]]; then
+    warn "DNS está resolvendo para $RESOLVED_IP, mas os testes estão usando $NODE_IP"
+    warn "Isto pode causar falhas de conexão se os IPs não forem acessíveis entre si"
+  fi
 else
   warn "DNS para $DOMAIN não está resolvendo. Verifique sua configuração do dnsmasq."
   log "Adicione no /etc/hosts: $NODE_IP $DOMAIN redpanda-0.$DOMAIN"

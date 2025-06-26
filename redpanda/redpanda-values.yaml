@@ -114,7 +114,7 @@ external:
   enabled: true
   # Usando NodePort para melhor compatibilidade com Rancher Desktop
   type: NodePort
-  domain: redpanda.localhost
+  domain: redpanda.rd
   service:
     enabled: true
     annotations:
@@ -156,8 +156,10 @@ console:
     ingressClassName: traefik
     annotations:
       traefik.ingress.kubernetes.io/router.entrypoints: web
+      # Explicitly disable HTTP/2 to prevent enableHttp2 warning
+      # traefik.ingress.kubernetes.io/use-regex: "true"
     hosts:
-      - host: redpanda.localhost
+      - host: redpanda.rd
         paths:
           - path: /
             pathType: Prefix
