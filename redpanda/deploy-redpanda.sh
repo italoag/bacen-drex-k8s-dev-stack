@@ -108,23 +108,25 @@ if command -v rpk >/dev/null; then
     fi
   done
   
-  if $SECRET_FOUND; then
-    if rpk cluster info --brokers "$NODE_IP:$NODEPORT_BROKER" --tls-enabled --tls-truststore /tmp/ca.crt; then
-      log "rpk TLS info OK"
-    else
-      warn "rpk não conseguiu conectar via TLS, tentando sem TLS..."
-      if rpk cluster info --brokers "$NODE_IP:$NODEPORT_BROKER"; then
-        log "rpk info OK (sem TLS)"
-      else
-        warn "rpk não conseguiu conectar (pode ignorar em dev)"
-      fi
-    fi
+  # Primeiro tentar conexão usando hostname com TLS (o certificado é válido para o hostname)
+  log "Tentando conexão com TLS usando hostname..."
+  if $SECRET_FOUND && rpk cluster info --brokers "$DOMAIN:$NODEPORT_BROKER" --tls-enabled --tls-truststore /tmp/ca.crt; then
+    log "✅ rpk TLS info via hostname OK"
   else
-    warn "Nenhum certificado válido encontrado, tentando conexão sem TLS..."
+    # Em caso de falha, tentar sem TLS usando IP
+    warn "Não conseguiu conectar via TLS com hostname, tentando sem TLS usando IP..."
     if rpk cluster info --brokers "$NODE_IP:$NODEPORT_BROKER"; then
-      log "rpk info OK (sem TLS)"
+      log "✅ rpk info OK (sem TLS)"
     else
-      warn "rpk não conseguiu conectar (pode ignorar em dev)"
+      warn "❌ rpk não conseguiu conectar sem TLS por IP"
+      
+      # Como último recurso, tentar sem TLS usando hostname
+      warn "Tentando sem TLS usando hostname..."
+      if rpk cluster info --brokers "$DOMAIN:$NODEPORT_BROKER"; then
+        log "✅ rpk info OK (sem TLS via hostname)"
+      else
+        warn "❌ rpk não conseguiu conectar (pode ignorar em dev)"
+      fi
     fi
   fi
 fi

@@ -40,6 +40,8 @@ tls:
     external:
       issuerRef: { name: selfsigned, kind: ClusterIssuer }
       caEnabled: true
+      ipAddresses:
+        - "192.168.64.2"
 
 #############################################################################
 # 3 ─ LISTENERS (portas e nomes exclusivos)
@@ -60,13 +62,21 @@ listeners:
   kafka:
     port: 9093
     authenticationMethod: none
-    tls: { enabled: false }
+    tls:
+      enabled: true  # Habilitando TLS para Kafka
+      cert: default
+      requireClientAuth: false
     external:
       default:
         port: 31094  # Alterado para 31094 (dentro da faixa NodePort)
         advertisedPorts:
         - 31094      # Alterado para corresponder
-        tls: { enabled: false }
+        advertisedAddresses:
+        - redpanda.rd     # Nome DNS em vez de IP
+        tls:
+          enabled: true   # Habilitando TLS para conexões externas
+          cert: external  # Usando certificado externo 
+          requireClientAuth: false
         authenticationMethod: none
   rpc:
     port: 33145
@@ -156,8 +166,6 @@ console:
     ingressClassName: traefik
     annotations:
       traefik.ingress.kubernetes.io/router.entrypoints: web
-      # Explicitly disable HTTP/2 to prevent enableHttp2 warning
-      # traefik.ingress.kubernetes.io/use-regex: "true"
     hosts:
       - host: redpanda.rd
         paths:
