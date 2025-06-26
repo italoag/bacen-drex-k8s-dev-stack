@@ -75,7 +75,7 @@ diagnose_certificates() {
     warn "O certificado de $domain foi emitido por uma autoridade corporativa"
     warn "Isso pode causar problemas com o cert-manager se os certificados não forem confiáveis"
   elif echo "$subject_cn" | grep -i "$domain" >/dev/null && \
-       echo "$issuer_cn" | grep -i -E '(let\'?s encrypt|isrg|r3)' >/dev/null; then
+       echo "$issuer_cn" | grep -i -E '(let'"'"'?s encrypt|lets encrypt|isrg|r3)' >/dev/null; then
     info "✅ Certificado parece legítimo do Let's Encrypt: $issuer_cn"
   else
     warn "⚠️  Certificado não corresponde ao esperado:"
