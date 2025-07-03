@@ -1,0 +1,15 @@
+besu:
+  nodeNamePrefix: node
+  image:
+    repository: hyperledger/besu
+    tag: latest
+    pullPolicy: Always
+  labels:
+    app: besu
+  baseNodePort: 31545
+  config:
+    metrics-enabled: true
+    metrics-host: "0.0.0.0"
+    metrics-port: 9545
+    metrics-protocol: "PROMETHEUS"
+    metrics-category: "ALL"

@@ -131,13 +131,13 @@ check_pods_ready "paladin" "app.kubernetes.io/name=paladin-operator"
 
 if $WITH_INGRESS; then
   info "Aplicando ingressos, ingressroutes de UI e middlewares do Paladin..."
-  kubectl apply -f paladin/paladin1-ingress.yaml
-  kubectl apply -f paladin/paladin1-ui-ingressroute.yaml
-  kubectl apply -f paladin/paladin2-ingress.yaml
-  kubectl apply -f paladin/paladin2-ui-ingressroute.yaml
-  kubectl apply -f paladin/paladin3-ingress.yaml
-  kubectl apply -f paladin/paladin3-ui-ingressroute.yaml
-  kubectl apply -f paladin/paladin-basic-auth-middleware.yaml
+  kubectl apply -f paladin1-ingress.yaml
+  kubectl apply -f paladin1-ui-ingressroute.yaml
+  kubectl apply -f paladin2-ingress.yaml
+  kubectl apply -f paladin2-ui-ingressroute.yaml
+  kubectl apply -f paladin3-ingress.yaml
+  kubectl apply -f paladin3-ui-ingressroute.yaml
+  kubectl apply -f paladin-basic-auth-middleware.yaml
   info "Ingressos e middlewares aplicados."
 else
   info "Instalando Paladin em modo hostNetwork (sem ingressos)."

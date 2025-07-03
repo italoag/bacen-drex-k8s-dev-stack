@@ -9,11 +9,11 @@ statefulset:
     requiredDuringSchedulingIgnoredDuringExecution: false
 
 #############################################################################
-# 1 ─ RECURSOS & PROBES
+# 1 ─ RECURSOS & PROBES (aumentados para monitoramento)
 #############################################################################
 resources:
-  cpu:    { cores: 1 }
-  memory: { container: { max: 2Gi } }
+  cpu:    { cores: 1.5 }
+  memory: { container: { max: 3Gi } }
 
 livenessProbe:
   initialDelaySeconds: 60
@@ -60,13 +60,19 @@ listeners:
   kafka:
     port: 9093
     authenticationMethod: none
-    tls: { enabled: false }
+    tls:
+      enabled: true  # Habilitando TLS para Kafka
+      cert: default
+      requireClientAuth: false
     external:
       default:
         port: 31094  # Alterado para 31094 (dentro da faixa NodePort)
         advertisedPorts:
         - 31094      # Alterado para corresponder
-        tls: { enabled: false }
+        tls:
+          enabled: true   # Habilitando TLS para conexões externas
+          cert: external  # Usando certificado externo
+          requireClientAuth: false
         authenticationMethod: none
   rpc:
     port: 33145
@@ -85,7 +91,6 @@ listeners:
         advertisedPorts:
           - 31083    # Alterado para corresponder
         tls:
-          # enabled: true
           cert: external
           requireClientAuth: false
         authenticationMethod: none
@@ -114,7 +119,7 @@ external:
   enabled: true
   # Usando NodePort para melhor compatibilidade com Rancher Desktop
   type: NodePort
-  domain: redpanda.localhost
+  # domain será definido dinamicamente pelo script de deploy com --set
   service:
     enabled: true
     annotations:
@@ -135,13 +140,24 @@ storage:
     storageClass: local-path
 
 #############################################################################
-# 6 ─ MONITORAMENTO
+# 6 ─ MONITORAMENTO AVANÇADO
 #############################################################################
 monitoring:
   enabled: true
-  scrapeInterval: 30s
+  scrapeInterval: 15s
   labels:
     release: kube-prometheus
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: kube-prometheus
+  grafanaDashboard:
+    enabled: true
+    namespace: monitoring
+    labels:
+      grafana_dashboard: "1"
+      app.kubernetes.io/part-of: redpanda
+      app.kubernetes.io/component: redpanda-dashboard
 
 #############################################################################
 # 7 ─ CONSOLE (Ingress Traefik)
@@ -156,8 +172,9 @@ console:
     ingressClassName: traefik
     annotations:
       traefik.ingress.kubernetes.io/router.entrypoints: web
+    # hosts será definido dinamicamente pelo script de deploy com --set
     hosts:
-      - host: redpanda.localhost
+      - host: placeholder  # será substituído pelo script
         paths:
           - path: /
             pathType: Prefix
@@ -169,3 +186,28 @@ console:
     httpGet: { path: /health, port: 8080 }
     initialDelaySeconds: 5
     periodSeconds: 10
+  env:
+    - name: REDPANDA_CONSOLE_CONFIG
+      value: |
+        kafka:
+          brokers:
+            - redpanda-0.redpanda.redpanda.svc.cluster.local:9093
+          tls:
+            enabled: true
+            certificateAuthorityFilepath: /etc/tls/ca/ca.crt
+        redpanda:
+          adminApi:
+            enabled: true
+            urls:
+              - http://redpanda-0.redpanda.redpanda.svc.cluster.local:9644
+        server:
+          listenPort: 8080
+          setupComplete: true
+          logger:
+            level: info
+        metrics:
+          enabled: true  # Habilita métricas de console Prometheus
+          listeners: 
+            - name: default
+              port: 9090
+              hostname: 0.0.0.0

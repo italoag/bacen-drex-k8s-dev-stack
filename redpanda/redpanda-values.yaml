@@ -31,6 +31,7 @@ readinessProbe:
 # 2 ─ TLS (ClusterIssuer/selfsigned)
 #############################################################################
 tls:
+  # enabled será definido dinamicamente pelo script de deploy com --set
   enabled: true
   certs:
     internal:
@@ -40,8 +41,7 @@ tls:
     external:
       issuerRef: { name: selfsigned, kind: ClusterIssuer }
       caEnabled: true
-      ipAddresses:
-        - "192.168.64.2"
+      # ipAddresses será definido dinamicamente pelo script de deploy
 
 #############################################################################
 # 3 ─ LISTENERS (portas e nomes exclusivos)
@@ -71,8 +71,7 @@ listeners:
         port: 31094  # Alterado para 31094 (dentro da faixa NodePort)
         advertisedPorts:
         - 31094      # Alterado para corresponder
-        advertisedAddresses:
-        - redpanda.rd     # Nome DNS em vez de IP
+        # advertisedAddresses será definido dinamicamente pelo script de deploy
         tls:
           enabled: true   # Habilitando TLS para conexões externas
           cert: external  # Usando certificado externo 
@@ -95,7 +94,6 @@ listeners:
         advertisedPorts:
           - 31083    # Alterado para corresponder
         tls:
-          # enabled: true
           cert: external
           requireClientAuth: false
         authenticationMethod: none
@@ -124,7 +122,7 @@ external:
   enabled: true
   # Usando NodePort para melhor compatibilidade com Rancher Desktop
   type: NodePort
-  domain: redpanda.rd
+  # domain será definido dinamicamente pelo script de deploy
   service:
     enabled: true
     annotations:
@@ -145,13 +143,18 @@ storage:
     storageClass: local-path
 
 #############################################################################
-# 6 ─ MONITORAMENTO
+# 6 ─ MONITORAMENTO & LOGGING (pode ser habilitado com --monitoring)
 #############################################################################
 monitoring:
-  enabled: true
+  # enabled será definido dinamicamente pelo script de deploy com --set
+  enabled: false
   scrapeInterval: 30s
   labels:
     release: kube-prometheus
+
+# Configuração de logs
+logging:
+  logLevel: info
 
 #############################################################################
 # 7 ─ CONSOLE (Ingress Traefik)
@@ -166,8 +169,9 @@ console:
     ingressClassName: traefik
     annotations:
       traefik.ingress.kubernetes.io/router.entrypoints: web
-    hosts:
-      - host: redpanda.rd
+    # hosts será definido dinamicamente pelo script de deploy com --set
+    hosts: 
+      - host: placeholder  # será substituído pelo script
         paths:
           - path: /
             pathType: Prefix

@@ -1,0 +1,78 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: besu-rpc-route
+  namespace: paladin
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: rpc-besu-tls # Secret TLS gerado pelo cert-manager
+  routes:
+    - match: Host(`rpc-besu.cluster.eita.cloud`)
+      kind: Rule
+      services:
+        - name: besu-node1-rpc
+          port: 8545
+        - name: besu-node2-rpc
+          port: 8545
+        - name: besu-node3-rpc
+          port: 8545
+      middlewares:
+        - name: besu-retry-middleware
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: besu-ws-route
+  namespace: paladin
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: ws-besu-tls # Secret TLS gerado pelo cert-manager
+  routes:
+    - match: Host(`ws-besu.cluster.eita.cloud`)
+      kind: Rule
+      services:
+        - name: besu-node1-ws
+          port: 8546
+        - name: besu-node2-ws
+          port: 8546
+        - name: besu-node3-ws
+          port: 8546
+      middlewares:
+        - name: besu-ws-middleware
+        - name: besu-retry-middleware
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: besu-graphql-route
+  namespace: paladin
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: graphql-besu-tls # (crie um Certificate se ainda não existir!)
+  routes:
+    - match: Host(`graphql-besu.cluster.eita.cloud`)
+      kind: Rule
+      services:
+        - name: besu-node1-graphql
+          port: 8547
+        - name: besu-node2-graphql
+          port: 8547
+        - name: besu-node3-graphql
+          port: 8547
+      middlewares:
+        - name: besu-retry-middleware

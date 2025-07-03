@@ -12,7 +12,7 @@ operator:
   namespace: "" # DEPRECATED: Use the namespace field in the HelmRelease instead. e.g. helm install ... --namespace <namespace>
   image:
     repository: docker.io/lfdecentralizedtrustlabs/paladin-operator
-    tag: v0.8.0
+    tag: v0.8.1
     pullPolicy: Always
   serviceAccount:
     create: true
@@ -67,11 +67,11 @@ operator:
     dataFile: assets/config.json
 # Prometheus dependencies
 prometheus:
-  enabled: false
+  enabled: true
   prometheus:
-    namespace: prometheus
+    namespace: cattle-monitoring-system
   alertmanager:
-    enabled: false
+    enabled: true
   server:
     enabled: false
   pushgateway:
@@ -106,7 +106,7 @@ paladin:
   nodeNamePrefix: node
   image:
     repository: docker.io/lfdecentralizedtrustlabs/paladin
-    tag: v0.8.0
+    tag: v0.8.1
     pullPolicy: Always
   labels:
     app: paladin
@@ -121,4 +121,9 @@ besu:
   labels:
     app: besu
   baseNodePort: 31545
-
+  config:
+    metrics-enabled: true
+    metrics-host: "0.0.0.0"
+    metrics-port: 9545
+    metrics-protocol: "PROMETHEUS"
+    metrics-category: "ALL"

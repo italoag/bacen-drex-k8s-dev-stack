@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: besu-metrics-config
+  namespace: paladin
+data:
+  metrics.toml: |
+    metrics-enabled=true
+    metrics-host="0.0.0.0"
+    metrics-port=9545
+    metrics-protocol="PROMETHEUS"
+    metrics-category="ALL"

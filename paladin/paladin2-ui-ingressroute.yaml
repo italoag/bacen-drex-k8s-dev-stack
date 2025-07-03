@@ -11,6 +11,7 @@ spec:
       kind: Rule
       middlewares:
         - name: my-basic-auth
+          namespace: default
       services:
         - name: paladin-node2
           port: 8548

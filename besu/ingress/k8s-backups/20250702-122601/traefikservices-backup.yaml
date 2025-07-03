@@ -1,0 +1,77 @@
+apiVersion: v1
+items:
+- apiVersion: traefik.io/v1alpha1
+  kind: TraefikService
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"traefik.io/v1alpha1","kind":"TraefikService","metadata":{"annotations":{},"name":"besu-graphql-lb","namespace":"paladin"},"spec":{"weighted":{"services":[{"name":"besu-node1-graphql","port":8547,"weight":1},{"name":"besu-node2-graphql","port":8547,"weight":1},{"name":"besu-node3-graphql","port":8547,"weight":1}]}}}
+    creationTimestamp: "2025-07-01T01:39:20Z"
+    generation: 1
+    name: besu-graphql-lb
+    namespace: paladin
+    resourceVersion: "37173213"
+    uid: 9e3aae6d-50c3-4ec8-a135-7345582fb99d
+  spec:
+    weighted:
+      services:
+      - name: besu-node1-graphql
+        port: 8547
+        weight: 1
+      - name: besu-node2-graphql
+        port: 8547
+        weight: 1
+      - name: besu-node3-graphql
+        port: 8547
+        weight: 1
+- apiVersion: traefik.io/v1alpha1
+  kind: TraefikService
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"traefik.io/v1alpha1","kind":"TraefikService","metadata":{"annotations":{},"name":"besu-rpc-lb","namespace":"paladin"},"spec":{"weighted":{"services":[{"name":"besu-node1-rpc","port":8545,"weight":1},{"name":"besu-node2-rpc","port":8545,"weight":1},{"name":"besu-node3-rpc","port":8545,"weight":1}]}}}
+    creationTimestamp: "2025-07-01T01:39:20Z"
+    generation: 1
+    name: besu-rpc-lb
+    namespace: paladin
+    resourceVersion: "37173211"
+    uid: 3458d391-a4a3-4a61-8250-a9c3d2280a13
+  spec:
+    weighted:
+      services:
+      - name: besu-node1-rpc
+        port: 8545
+        weight: 1
+      - name: besu-node2-rpc
+        port: 8545
+        weight: 1
+      - name: besu-node3-rpc
+        port: 8545
+        weight: 1
+- apiVersion: traefik.io/v1alpha1
+  kind: TraefikService
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"traefik.io/v1alpha1","kind":"TraefikService","metadata":{"annotations":{},"name":"besu-ws-lb","namespace":"paladin"},"spec":{"weighted":{"services":[{"name":"besu-node1-ws","port":8546,"weight":1},{"name":"besu-node2-ws","port":8546,"weight":1},{"name":"besu-node3-ws","port":8546,"weight":1}]}}}
+    creationTimestamp: "2025-07-01T01:39:20Z"
+    generation: 1
+    name: besu-ws-lb
+    namespace: paladin
+    resourceVersion: "37173212"
+    uid: 564eb8a3-80e2-41af-b5b0-43feaab64f80
+  spec:
+    weighted:
+      services:
+      - name: besu-node1-ws
+        port: 8546
+        weight: 1
+      - name: besu-node2-ws
+        port: 8546
+        weight: 1
+      - name: besu-node3-ws
+        port: 8546
+        weight: 1
+kind: List
+metadata:
+  resourceVersion: ""
