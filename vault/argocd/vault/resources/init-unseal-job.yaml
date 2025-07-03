@@ -1,0 +1,75 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vault-init-unseal-job
+  namespace: vault
+spec:
+  template:
+    spec:
+      serviceAccountName: vault-init-unseal
+      restartPolicy: OnFailure
+      containers:
+      - name: kubectl-jq
+        image: bitnami/kubectl:1.28
+        command:
+        - /bin/sh
+        - -c
+        - |
+          #!/bin/sh
+          set -euf
+          
+          NS="vault"
+          RELEASE="vault"
+          POD_NAME="${RELEASE}-0"
+          SECRET_NAME="vault-keys"
+          VAULT_ADDR="http://127.0.0.1:8200"
+
+          echo "[INFO] Aguardando o pod ${POD_NAME} estar rodando..."
+          kubectl wait --for=condition=PodReadyToStartContainers pod/${POD_NAME} -n ${NS} --timeout=300s
+          
+          echo "[INFO] Aguardando o Vault responder aos comandos..."
+          until kubectl exec ${POD_NAME} -n ${NS} -- vault status >/dev/null 2>&1 || [ $? -eq 2 ]; do
+            echo "[INFO] Vault ainda não está respondendo, aguardando..."
+            sleep 5
+          done
+          echo "[INFO] Vault está respondendo!"
+
+          echo "[INFO] Verificando se o Vault já foi inicializado (procurando pelo segredo '${SECRET_NAME}')..."
+          if kubectl get secret ${SECRET_NAME} -n ${NS} >/dev/null 2>&1; then
+            echo "[INFO] Segredo '${SECRET_NAME}' encontrado. O Vault já foi inicializado."
+            
+            echo "[INFO] Verificando se o Vault está selado..."
+            STATUS_JSON=$(kubectl exec ${POD_NAME} -n ${NS} -- vault status -format=json)
+            SEALED=$(echo "${STATUS_JSON}" | jq -r '.sealed')
+
+            if [ "${SEALED}" = "true" ]; then
+              echo "[WARN] Vault está selado. Tentando fazer unseal..."
+              UNSEAL_KEY=$(kubectl get secret ${SECRET_NAME} -n ${NS} -o jsonpath='{.data.unseal-key}' | base64 -d)
+              kubectl exec ${POD_NAME} -n ${NS} -- vault operator unseal ${UNSEAL_KEY}
+              echo "[INFO] ✅ Unseal concluído."
+            else
+              echo "[INFO] ✅ Vault já está 'unsealed'. Nenhuma ação necessária."
+            fi
+            exit 0
+          fi
+
+          echo "[INFO] Segredo não encontrado. Iniciando o processo de 'operator init'..."
+          INIT_JSON=$(kubectl exec ${POD_NAME} -n ${NS} -- vault operator init -key-shares=1 -key-threshold=1 -format=json)
+          
+          UNSEAL_KEY=$(echo "${INIT_JSON}" | jq -r '.unseal_keys_b64[0]')
+          ROOT_TOKEN=$(echo "${INIT_JSON}" | jq -r '.root_token')
+
+          if [ -z "${UNSEAL_KEY}" ] || [ "${UNSEAL_KEY}" = "null" ] || [ -z "${ROOT_TOKEN}" ] || [ "${ROOT_TOKEN}" = "null" ]; then
+            echo "[ERR] Falha ao extrair chaves da inicialização." >&2
+            exit 1
+          fi
+          
+          echo "[INFO] ✅ Chaves extraídas com sucesso. Criando segredo '${SECRET_NAME}'..."
+          kubectl create secret generic ${SECRET_NAME} -n ${NS} \
+            --from-literal=unseal-key=${UNSEAL_KEY} \
+            --from-literal=root-token=${ROOT_TOKEN}
+          
+          echo "[INFO] Realizando o primeiro unseal..."
+          kubectl exec ${POD_NAME} -n ${NS} -- vault operator unseal ${UNSEAL_KEY}
+          
+          echo "[INFO] ✅ Vault inicializado, segredo criado e unseal realizado com sucesso!"

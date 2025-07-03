@@ -1,0 +1,3 @@
+ingress:
+  enabled: true
+domain: hml.eita.cloud

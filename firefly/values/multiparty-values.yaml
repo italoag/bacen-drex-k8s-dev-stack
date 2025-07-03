@@ -1,0 +1,79 @@
+# firefly-multiparty-values.yaml
+# Configuração para o nó multiparty do FireFly baseada no local-kind-values.yaml
+
+# Configurações principais
+config:
+  debugEnabled: true
+  adminEnabled: true
+  metricsEnabled: true
+  preInit: true
+  multipartyEnabled: true  # Multiparty habilitado
+
+  # Configurações da organização
+  organizationName: "EITA"
+  organizationKey: "0xeb7284ce905e0665b7d42cabe31c76c45da1d331"
+  
+  # Configuração do contrato Firefly
+  fireflyContractAddress: "0xeb7284ce905e0665b7d42cabe31c76c45da1d254"
+  fireflyContractFirstEvent: 0
+
+  # Configurações de conectividade
+  evmconnectUrl: "http://firefly-evmconnect:5000"
+  
+  # Configurações do banco de dados
+  postgresUrl: "postgres://postgres:Bigode%234104%21@postgres-postgresql.database.svc:5432/firefly?sslmode=disable"
+  postgresAutomigrate: true
+
+  # Configurações do IPFS
+  ipfsApiUrl: "http://ipfs.ipfs.svc:5001"
+  ipfsGatewayUrl: "http://ipfs.ipfs.svc:8080"
+
+  # Configuração do address resolver (opcional)
+  addresssResolverUrlTemplate: "http://address-resolver.firefly-os/wallets/{{.Key}}"
+
+# Configurações do core
+core:
+  metrics:
+    serviceMonitor:
+      enabled: true
+
+# Configurações do DataExchange (habilitado para multiparty)
+dataexchange:
+  enabled: true
+  certificate:
+    enabled: true
+    issuerRef:
+      kind: ClusterIssuer
+      name: selfsigned-ca
+  tlsSecret:
+    enabled: false
+
+# Configurações do sandbox
+sandbox:
+  enabled: true
+
+# Configurações do signer
+signer:
+  enabled: true
+
+# Configurações do EVMConnect
+evmconnect:
+  enabled: true
+  image:
+    tag: v1.3.20
+  config:
+    jsonRpcUrl: "http://firefly-signer.firefly.svc:8545"
+    policyEngine: |
+      policyengine.simple:
+        fixedGasPrice: "0"
+        resubmitInterval: 5m
+        gasOracle:
+          mode: fixed
+
+# Configurações dos contratos ERC
+erc1155:
+  enabled: true
+
+erc20erc721:
+  enabled: true
+

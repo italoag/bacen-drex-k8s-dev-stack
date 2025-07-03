@@ -1,0 +1,64 @@
+# firefly-signer-values.yaml
+# Configuração para o FireFly Signer baseada no local-kind-values.yaml
+
+# Configuração da imagem do FireFly Signer
+image:
+  repository: ghcr.io/hyperledger/firefly-signer
+  pullPolicy: IfNotPresent
+  tag: "v1.1.20"
+
+# Configuração do backend blockchain (Besu)
+backend:
+  url: "http://besu-node1-rpc.paladin.svc:8545"  # Serviço Besu na namespace paladin
+  chainId: 1337  # Chain ID para desenvolvimento local
+
+# Configuração do signer
+signer:
+  enabled: true
+
+# Configuração do serviço
+service:
+  type: ClusterIP
+  port: 8545
+
+# Configurações de recursos
+resources: {}
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+  # requests:
+  #   cpu: 250m
+  #   memory: 256Mi
+
+# Configurações de segurança
+podSecurityContext:
+  fsGroup: 1001
+
+securityContext: {}
+
+# Configurações de deployment
+podAnnotations: {}
+
+# Configurações de tolerância e afinidade
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Configuração de volumes persistentes (se necessário)
+persistentVolume:
+  enabled: false
+  size: 1Gi
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+
+# Configurações extras
+extraEnv: []
+initContainers: ""
+extraContainers: ""
+
+# Configurações de monitoramento
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false

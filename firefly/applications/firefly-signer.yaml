@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: firefly-signer
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hyperledger/firefly-helm-charts.git # Ou o seu repositório do chart
+    targetRevision: main
+    path: charts/firefly-signer # Caminho para o chart do firefly-signer
+    helm:
+      valueFiles:
+        - ../values/signer-values.yaml # Caminho para o arquivo de values customizado
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: firefly # Namespace onde o Firefly Signer será implantado
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

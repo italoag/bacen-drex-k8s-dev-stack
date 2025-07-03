@@ -1,0 +1,73 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ipfs
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hyperledger/firefly-helm-charts.git
+    targetRevision: main
+    path: charts/ipfs
+    helm:
+      values: |
+        image:
+          repository: ipfs/kubo
+          pullPolicy: IfNotPresent
+          tag: "v0.35.0"
+
+        service:
+          type: ClusterIP
+          apiPort: 5001
+          gatewayPort: 8080
+
+        podAnnotations: {}
+
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+
+        podSecurityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsNonRoot: true
+
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+
+        persistentVolume:
+          enabled: true
+          size: 10Gi
+          storageClass: ""
+          accessModes:
+            - ReadWriteOnce
+
+        nodeSelector: {}
+        tolerations: []
+        affinity: {}
+
+        extraEnv: []
+        initContainers: ""
+        extraContainers: ""
+
+        metrics:
+          enabled: true
+          serviceMonitor:
+            enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ipfs
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: paladin
+description: A Helm chart for deploying Paladin
+version: 0.1.0

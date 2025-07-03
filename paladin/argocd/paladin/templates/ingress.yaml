@@ -1,0 +1,190 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: paladin1-ingress
+  namespace: paladin
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - paladin1.{{ .Values.domain }}
+    secretName: paladin1-tls
+  rules:
+  - host: paladin1.{{ .Values.domain }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node1
+              port:
+                number: 8548
+        - path: /ws
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node1
+              port:
+                number: 8549
+        - path: /grpc
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node1
+              port:
+                number: 9000
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: paladin1-ui-ingress
+  namespace: paladin
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`paladin1.{{ .Values.domain }}`) && PathPrefix(`/ui`)
+      kind: Rule
+      middlewares:
+        - name: my-basic-auth
+          namespace: default
+      services:
+        - name: paladin-node1
+          port: 8548
+  tls:
+    secretName: paladin1-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: paladin2-ingress
+  namespace: paladin
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - paladin2.{{ .Values.domain }}
+    secretName: paladin2-tls
+  rules:
+  - host: paladin2.{{ .Values.domain }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node2
+              port:
+                number: 8548
+        - path: /ws
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node2
+              port:
+                number: 8549
+        - path: /grpc
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node2
+              port:
+                number: 9000
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: paladin2-ui-ingress
+  namespace: paladin
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`paladin2.{{ .Values.domain }}`) && PathPrefix(`/ui`)
+      kind: Rule
+      middlewares:
+        - name: my-basic-auth
+          namespace: default
+      services:
+        - name: paladin-node2
+          port: 8548
+  tls:
+    secretName: paladin2-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: paladin3-ingress
+  namespace: paladin
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - paladin3.{{ .Values.domain }}
+    secretName: paladin3-tls
+  rules:
+  - host: paladin3.{{ .Values.domain }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node3
+              port:
+                number: 8548
+        - path: /ws
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node3
+              port:
+                number: 8549
+        - path: /grpc
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node3
+              port:
+                number: 9000
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: paladin3-ui-ingress
+  namespace: paladin
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`paladin3.{{ .Values.domain }}`) && PathPrefix(`/ui`)
+      kind: Rule
+      middlewares:
+        - name: my-basic-auth
+          namespace: default
+      services:
+        - name: paladin-node3
+          port: 8548
+  tls:
+    secretName: paladin3-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: my-basic-auth
+  namespace: paladin
+spec:
+  basicAuth:
+    secret: my-basic-auth-secret
+{{- end }}

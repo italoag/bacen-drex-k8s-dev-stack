@@ -1,0 +1,53 @@
+# Valores que SOBRESCREVEM o base.yaml para o ambiente de DESENVOLVIMENTO.
+
+global:
+  # Em dev, desabilitamos o TLS para simplificar.
+  tlsDisable: true
+
+server:
+  # Habilitar hostNetwork para acesso direto e fácil em clusters de dev (Minikube, etc.)
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+
+  # Em dev, não precisamos de alta disponibilidade.
+  ha:
+    enabled: false
+
+  # Usamos o selo 'shamir' para inicialização manual/scripted, que é simples para dev.
+  # Produção DEVE usar um KMS (awskms, gcpckms, etc.).
+  seal:
+    type: "shamir"
+
+  # Configuração da UI para ser acessível externamente via NodePort em dev.
+  ui:
+    serviceType: "NodePort"
+    serviceNodePort: 30800
+
+  # O serviço principal também exposto como NodePort para acesso direto à API.
+  service:
+    type: NodePort
+    nodePort: 30820
+
+  # Configuração específica para um nó único com armazenamento em arquivo.
+  # ISTO NÃO DEVE SER USADO EM PRODUÇÃO.
+  standalone:
+    enabled: true
+    config: |
+      ui = true
+      
+      listener "tcp" {
+        address = "0.0.0.0:8200"
+        tls_disable = true
+      }
+      
+      storage "file" {
+        path = "/vault/data"
+      }
+      
+      api_addr = "http://$(POD_IP):8200"
+      cluster_addr = "http://$(POD_IP):8201"
+
+  # Variáveis de ambiente necessárias para a configuração standalone.
+  extraEnvironmentVars:
+    VAULT_ADDR: http://127.0.0.1:8200
+    POD_IP: "$(POD_IP)"

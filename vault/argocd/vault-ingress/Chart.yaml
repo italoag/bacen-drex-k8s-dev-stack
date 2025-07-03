@@ -1,0 +1,4 @@
+apiVersion: v2
+name: vault-ingress
+description: A Helm chart for Vault Ingress
+version: 0.1.0

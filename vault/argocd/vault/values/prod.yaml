@@ -1,0 +1,22 @@
+# Valores que sobrescrevem ou se somam ao base.yaml para o ambiente de PROD
+server:
+  ha:
+    enabled: true # Em produção, queremos HA
+    replicas: 3
+  ui:
+    enabled: true
+    serviceType: "ClusterIP" # Sem NodePort em produção
+  # Em produção, usaríamos um backend de armazenamento real, não 'file'
+  standalone:
+    enabled: false
+  storage:
+    raft: {} # Exemplo para usar o storage Raft
+  resources: 
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+global:
+  tlsDisable: false # TLS habilitado em produção!

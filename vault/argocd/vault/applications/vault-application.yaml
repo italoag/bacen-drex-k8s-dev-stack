@@ -1,0 +1,96 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # Nome específico para o ambiente
+  name: vault-app
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    # Namespace específico para o ambiente, para isolamento
+    namespace: vault
+  
+  # A fonte é o chart Helm remoto da HashiCorp
+  source:
+    repoURL: https://helm.releases.hashicorp.com
+    chart: vault
+    targetRevision: 0.30.0
+
+    # Configuração do Helm
+    helm:
+      # O nome do release no Kubernetes
+      releaseName: vault
+      
+      # Values personalizados inline (copiados dos arquivos base.yaml e dev.yaml)
+      values: |
+        global:
+          tlsDisable: true
+        
+        server:
+          hostNetwork: true
+          dnsPolicy: ClusterFirstWithHostNet
+          ha:
+            enabled: false
+          seal:
+            type: "shamir"
+          ui:
+            serviceType: "NodePort"
+            serviceNodePort: 30800
+          service:
+            type: NodePort
+            nodePort: 30820
+          standalone:
+            enabled: true
+            config: |
+              ui = true
+              
+              listener "tcp" {
+                address = "0.0.0.0:8200"
+                tls_disable = true
+              }
+              
+              storage "file" {
+                path = "/vault/data"
+              }
+              
+              api_addr = "http://$(POD_IP):8200"
+              cluster_addr = "http://$(POD_IP):8201"
+          
+          extraEnvironmentVars:
+            VAULT_ADDR: http://127.0.0.1:8200
+            POD_IP: "$(POD_IP)"
+          
+          dataStorage:
+            size: 5Gi
+          
+          logLevel: "info"
+          logFormat: "standard"
+          
+          readinessProbe:
+            enabled: true
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+        
+        injector:
+          enabled: true
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true # Garante que o namespace 'vault' seja criado

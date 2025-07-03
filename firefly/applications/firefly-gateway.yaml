@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: firefly-gateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hyperledger/firefly-helm-charts.git # Substitua pelo seu repositório do chart, se for diferente
+    targetRevision: main
+    path: charts/firefly
+    helm:
+      valueFiles:
+        - ../values/gateway-values.yaml # Caminho para o seu arquivo de values customizado
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: firefly-gateway # Namespace onde o Firefly será implantado
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

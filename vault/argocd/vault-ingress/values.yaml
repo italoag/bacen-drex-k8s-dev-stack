@@ -1,0 +1,4 @@
+ingress:
+  enabled: false
+serviceName: vault
+servicePort: 8200

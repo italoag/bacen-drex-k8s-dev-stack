@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-init-unseal
+  namespace: vault
+  annotations:
+    # Informa ao ArgoCD para não se preocupar se este recurso já existe
+    argocd.argoproj.io/sync-wave: "-5"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vault-init-unseal-role
+  namespace: vault
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vault-init-unseal-binding
+  namespace: vault
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vault-init-unseal-role
+subjects:
+- kind: ServiceAccount
+  name: vault-init-unseal

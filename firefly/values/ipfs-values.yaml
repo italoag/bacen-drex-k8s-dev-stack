@@ -1,0 +1,112 @@
+# ipfs-values.yaml
+# Configuração para o deployment do IPFS
+
+# Configuração da imagem
+image:
+  repository: ipfs/kubo
+  pullPolicy: IfNotPresent
+  tag: "v0.35.0"
+
+# Configuração do serviço
+service:
+  type: ClusterIP
+  apiPort: 5001
+  gatewayPort: 8080
+
+# Configurações de deployment
+podAnnotations: {}
+
+# Configurações de recursos
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Configurações de segurança
+podSecurityContext:
+  fsGroup: 1000
+  runAsUser: 1000
+  runAsNonRoot: true
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# Configurações de volumes persistentes
+persistentVolume:
+  enabled: true
+  size: 10Gi
+  storageClass: "" # Usar storageClass padrão do cluster
+  accessModes:
+    - ReadWriteOnce
+
+# Configurações de tolerância e afinidade
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Configurações extras
+extraEnv: []
+initContainers: ""
+extraContainers: ""
+
+# Configurações de monitoramento
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+
+# Configurações de inicialização do IPFS
+config:
+  # Configurações básicas do IPFS
+  bootstrap: true
+  # Configurações de rede
+  swarm:
+    enableHolePunching: true
+    enableAutoRelay: true
+  # Configurações de API
+  api:
+    httpHeaders:
+      Access-Control-Allow-Origin: ["*"]
+      Access-Control-Allow-Methods: ["GET", "POST", "PUT", "DELETE"]
+      Access-Control-Allow-Headers: ["*"]
+  # Configurações de gateway
+  gateway:
+    httpHeaders:
+      Access-Control-Allow-Origin: ["*"]
+      Access-Control-Allow-Methods: ["GET"]
+      Access-Control-Allow-Headers: ["*"]
+
+# Configurações de ingress (opcional)
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: ipfs.local
+      paths:
+        - path: /
+          pathType: Prefix
+          port: 8080
+  tls: []
+
+# Configurações de liveness e readiness probes
+livenessProbe:
+  httpGet:
+    path: /api/v0/version
+    port: 5001
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /api/v0/version
+    port: 5001
+  initialDelaySeconds: 5
+  periodSeconds: 5
