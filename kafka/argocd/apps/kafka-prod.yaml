@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/italo-goncalves/bacen-drex-kubernetes-dev-stack'
+    repoURL: 'https://github.com/italoag/bacen-drex-k8s-dev-stack'
     path: kafka/argocd/kafka
     targetRevision: main
     helm:
