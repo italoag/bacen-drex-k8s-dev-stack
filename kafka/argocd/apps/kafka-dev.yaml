@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: 'https://github.com/italo-goncalves/bacen-drex-kubernetes-dev-stack'
     path: kafka/argocd/kafka
-    targetRevision: HEAD
+    targetRevision: main
     helm:
       valueFiles:
         - environments/values-dev.yaml
