@@ -1,0 +1,33 @@
+# Multi-stage build otimizado para ARM64
+FROM --platform=$BUILDPLATFORM golang:1.23-bookworm AS builder
+
+ARG TARGETOS
+ARG TARGETARCH
+ARG BUILD_VERSION=v1.1.21
+
+ENV BUILD_VERSION=${BUILD_VERSION}
+ENV CGO_ENABLED=0
+ENV GOOS=${TARGETOS}
+ENV GOARCH=${TARGETARCH}
+
+WORKDIR /app
+COPY firefly-signer/go.mod firefly-signer/go.sum ./
+RUN go mod download
+
+COPY firefly-signer/ .
+RUN go build -ldflags="-s -w" -o firefly-signer ./cmd
+
+# Runtime stage
+FROM debian:bookworm-slim
+
+RUN apt-get update -y \
+    && apt-get install -y curl jq ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd -u 1001 -m ffsigner
+
+WORKDIR /home/ffsigner
+COPY --from=builder /app/firefly-signer /usr/bin/ffsigner
+RUN chmod +x /usr/bin/ffsigner
+
+USER 1001
+ENTRYPOINT ["/usr/bin/ffsigner"]
