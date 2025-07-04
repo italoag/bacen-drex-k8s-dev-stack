@@ -10,8 +10,60 @@ spec:
     targetRevision: main
     path: charts/firefly
     helm:
-      valueFiles:
-        - ../values/gateway-values.yaml # Caminho para o seu arquivo de values customizado
+      values: |
+        config:
+          debugEnabled: true
+          adminEnabled: true
+          metricsEnabled: true
+          preInit: true
+          multipartyEnabled: false
+
+          organizationName: "EITA"
+          organizationKey: "0x75a99473917701038e854ef6999c76cd947c9f9e"
+          
+          fireflyContractAddress: "0xeb7284ce905e0665b7d42cabe31c76c45da1d254"
+          fireflyContractFirstEvent: 0
+
+          evmconnectUrl: "http://firefly-evmconnect:5000"
+          
+          postgresUrl: "postgres://postgres:Bigode%234104%21@postgres-postgresql.database.svc:5432/firefly_gateway?sslmode=disable"
+          postgresAutomigrate: true
+
+          ipfsApiUrl: "http://ipfs.ipfs.svc:5001"
+          ipfsGatewayUrl: "http://ipfs.ipfs.svc:8080"
+
+        core:
+          metrics:
+            serviceMonitor:
+              enabled: true
+
+        dataexchange:
+          enabled: false
+
+        sandbox:
+          enabled: true
+
+        signer:
+          enabled: true
+
+        evmconnect:
+          enabled: true
+          image:
+            tag: v1.3.20
+          config:
+            jsonRpcUrl: "http://firefly-signer.firefly-gateway.svc:8545"
+            policyEngine: |
+              policyengine.simple:
+                fixedGasPrice: "0"
+                resubmitInterval: 5m
+                gasOracle:
+                  mode: fixed
+
+        erc1155:
+          enabled: true
+
+        erc20erc721:
+          enabled: true
   destination:
     server: https://kubernetes.default.svc
     namespace: firefly-gateway # Namespace onde o Firefly será implantado
