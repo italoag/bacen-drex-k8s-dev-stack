@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: firefly-config
+  namespace: firefly-gateway
+data:
+  firefly.core.yaml: |
+    debug: true
+    admin:
+      enabled: true
+      port: 5001
+    http:
+      port: 5000
+      address: "0.0.0.0"
+      headers:
+        enabled: true
+    metrics:
+      enabled: true
+      port: 6000
+      address: "0.0.0.0"
+    database:
+      type: postgres
+      postgres:
+        url: "postgres://postgres:Bigode%234104%21@postgres-postgresql.database.svc:5432/firefly_gateway?sslmode=disable"
+        migrationsDirectory: "./db/migrations/postgres"
+        migrationsAuto: true
+    blockchain:
+      ethereum:
+        evmconnect:
+          url: "http://firefly-evmconnect:5000"
+    tokens:
+      - name: erc1155
+        plugin: erc1155
+        connector:
+          url: "http://firefly-tokens-erc1155:5000"
+      - name: erc20erc721
+        plugin: erc20erc721
+        connector:
+          url: "http://firefly-tokens-erc20erc721:5000"
+    sharedstorage:
+      ipfs:
+        api:
+          url: "http://ipfs.ipfs.svc:5001"
+        gateway:
+          url: "http://ipfs.ipfs.svc:8080"
+    namespaces:
+      default: "default"
+      predefined:
+        - name: "default"
+          description: "Default namespace"
+          multiparty:
+            enabled: false
+            org:
+              name: "EITA"
+              key: "0x75a99473917701038e854ef6999c76cd947c9f9e"
+            node:
+              name: "firefly-gateway"
+          plugins:
+            - blockchain
+            - sharedstorage
+            - tokens

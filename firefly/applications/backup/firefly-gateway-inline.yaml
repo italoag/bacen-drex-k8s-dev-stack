@@ -1,0 +1,95 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: firefly-gateway
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - name: firefly-gateway
+  template:
+    metadata:
+      name: '{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/argoproj/argocd-example-apps.git
+        targetRevision: HEAD
+        path: plugins/raw-kubernetes
+        plugin:
+          name: raw-kubernetes
+          env:
+          - name: KUSTOMIZE_BUILD_OPTIONS
+            value: "--enable-alpha-plugins"
+          - name: RAWKUBERNETES_MANIFESTS
+            value: |
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: firefly-gateway
+              ---
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: firefly-config
+                namespace: firefly-gateway
+              data:
+                firefly.core.yaml: |
+                  debug: true
+                  admin:
+                    enabled: true
+                    port: 5001
+                  http:
+                    port: 5000
+                    address: "0.0.0.0"
+                  metrics:
+                    enabled: true
+                    port: 6000
+                    address: "0.0.0.0"
+                  database:
+                    type: postgres
+                    postgres:
+                      url: "postgres://postgres:Bigode%234104%21@postgres-postgresql.database.svc:5432/firefly_gateway?sslmode=disable"
+                      migrationsDirectory: "./db/migrations/postgres"
+                      migrationsAuto: true
+                  blockchain:
+                    ethereum:
+                      evmconnect:
+                        url: "http://firefly-evmconnect:5000"
+                  tokens:
+                    - name: erc1155
+                      plugin: erc1155
+                      connector:
+                        url: "http://firefly-tokens-erc1155:5000"
+                    - name: erc20erc721
+                      plugin: erc20erc721
+                      connector:
+                        url: "http://firefly-tokens-erc20erc721:5000"
+                  sharedstorage:
+                    ipfs:
+                      api:
+                        url: "http://ipfs.ipfs.svc:5001"
+                      gateway:
+                        url: "http://ipfs.ipfs.svc:8080"
+                  namespaces:
+                    default: "default"
+                    predefined:
+                      - name: "default"
+                        description: "Default namespace"
+                        multiparty:
+                          enabled: false
+                        plugins:
+                          - ethereum
+                          - erc1155
+                          - erc20erc721
+                          - ipfs
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: firefly-gateway
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: firefly-gateway
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    # Aponta para o seu repositório Git local
+    repoURL: https://github.com/italoag/bacen-drex-kubernetes-dev-stack.git
+    targetRevision: main
+    path: firefly/k8s-manifests/manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: firefly-gateway
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  ignoreDifferences:
+  - group: ""
+    kind: ConfigMap
+    name: firefly-config
+    namespace: firefly-gateway

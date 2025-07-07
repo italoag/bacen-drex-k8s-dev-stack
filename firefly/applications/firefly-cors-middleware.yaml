@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: firefly-gateway-cors
+  namespace: firefly-gateway
+spec:
+  headers:
+    accessControlAllowOriginList:
+      - "*"
+    accessControlAllowHeaders:
+      - "*"
+    accessControlAllowMethods:
+      - "*"

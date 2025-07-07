@@ -13,8 +13,8 @@ spec:
       values: |
         image:
           repository: ghcr.io/italoag/firefly-signer
-          pullPolicy: IfNotPresent
-          tag: "v1.1.21-arm64"
+          pullPolicy: Always
+          tag: "latest"
 
         backend:
           url: "http://besu-node1-rpc.paladin.svc:8545"

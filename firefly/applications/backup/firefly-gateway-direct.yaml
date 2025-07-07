@@ -1,0 +1,243 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: firefly-gateway
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firefly-core
+  namespace: firefly-gateway
+  labels:
+    app: firefly-core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: firefly-core
+  template:
+    metadata:
+      labels:
+        app: firefly-core
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+      - name: firefly
+        image: ghcr.io/italoag/firefly:latest-arm64
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          name: http
+        - containerPort: 5001
+          name: admin
+        command: ["firefly"]
+        args: ["-f", "/etc/firefly/firefly.core.yaml"]
+        volumeMounts:
+        - name: config
+          mountPath: /etc/firefly
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /api/v1/status
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/v1/status
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: config
+        configMap:
+          name: firefly-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: firefly-core
+  namespace: firefly-gateway
+  labels:
+    app: firefly-core
+spec:
+  selector:
+    app: firefly-core
+  ports:
+  - name: http
+    port: 5000
+    targetPort: 5000
+  - name: admin
+    port: 5001
+    targetPort: 5001
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firefly-evmconnect
+  namespace: firefly-gateway
+  labels:
+    app: firefly-evmconnect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: firefly-evmconnect
+  template:
+    metadata:
+      labels:
+        app: firefly-evmconnect
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+      - name: evmconnect
+        image: ghcr.io/hyperledger/firefly-evmconnect:v1.3.20
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        env:
+        - name: EVMCONNECT_BACKEND_CHAINID
+          value: "1337"
+        - name: EVMCONNECT_BACKEND_URL
+          value: "http://firefly-signer.firefly-gateway.svc:8545"
+        - name: EVMCONNECT_POLICYENGINE_SIMPLE_FIXEDGASPRICE
+          value: "0"
+        - name: EVMCONNECT_POLICYENGINE_SIMPLE_GASORACLE_MODE
+          value: "fixed"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: firefly-evmconnect
+  namespace: firefly-gateway
+  labels:
+    app: firefly-evmconnect
+spec:
+  selector:
+    app: firefly-evmconnect
+  ports:
+  - name: http
+    port: 5000
+    targetPort: 5000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firefly-tokens-erc1155
+  namespace: firefly-gateway
+  labels:
+    app: firefly-tokens-erc1155
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: firefly-tokens-erc1155
+  template:
+    metadata:
+      labels:
+        app: firefly-tokens-erc1155
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+      - name: tokens
+        image: ghcr.io/hyperledger/firefly-tokens-erc1155:v1.3.4
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        env:
+        - name: TOKENS_CONNECTOR_URL
+          value: "http://firefly-evmconnect:5000"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: firefly-tokens-erc1155
+  namespace: firefly-gateway
+  labels:
+    app: firefly-tokens-erc1155
+spec:
+  selector:
+    app: firefly-tokens-erc1155
+  ports:
+  - name: http
+    port: 5000
+    targetPort: 5000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firefly-tokens-erc20erc721
+  namespace: firefly-gateway
+  labels:
+    app: firefly-tokens-erc20erc721
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: firefly-tokens-erc20erc721
+  template:
+    metadata:
+      labels:
+        app: firefly-tokens-erc20erc721
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+      - name: tokens
+        image: ghcr.io/hyperledger/firefly-tokens-erc20-erc721:v1.3.4
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        env:
+        - name: TOKENS_CONNECTOR_URL
+          value: "http://firefly-evmconnect:5000"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: firefly-tokens-erc20erc721
+  namespace: firefly-gateway
+  labels:
+    app: firefly-tokens-erc20erc721
+spec:
+  selector:
+    app: firefly-tokens-erc20erc721
+  ports:
+  - name: http
+    port: 5000
+    targetPort: 5000
+  type: ClusterIP

@@ -1,0 +1,77 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: firefly-gateway-ingress
+  namespace: firefly-gateway
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - firefly.cluster.eita.cloud
+    secretName: firefly-gateway-tls  # Esse secret será criado automaticamente pelo cert-manager
+  rules:
+  - host: firefly.cluster.eita.cloud
+    http:
+      paths:
+        # Regra para servir a API FireFly Core (HTTP)
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              name: firefly-gateway
+              port:
+                number: 5000
+        # Regra para servir a UI FireFly Core (HTTP)
+        - path: /ui
+          pathType: Prefix
+          backend:
+            service:
+              name: firefly-gateway
+              port:
+                number: 5000
+        # Regra para servir métricas (Prometheus)
+        - path: /metrics
+          pathType: Prefix
+          backend:
+            service:
+              name: firefly-gateway
+              port:
+                number: 5100
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: firefly-sandbox-ingress
+  namespace: firefly-gateway
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - firefly-sandbox.cluster.eita.cloud
+    secretName: firefly-sandbox-tls  # Esse secret será criado automaticamente pelo cert-manager
+  rules:
+  - host: firefly-sandbox.cluster.eita.cloud
+    http:
+      paths:
+        # Regra para API do Sandbox
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              name: firefly-gateway-sandbox
+              port:
+                number: 3001
+        # Regra para servir o Sandbox UI
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: firefly-gateway-sandbox
+              port:
+                number: 3001

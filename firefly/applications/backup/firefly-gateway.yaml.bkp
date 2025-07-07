@@ -1,0 +1,116 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: firefly-gateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/italoag/firefly-helm-charts.git
+    targetRevision: main
+    path: charts/firefly
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # FireFly Gateway Values - ARM64 Custom Setup
+        # Usando chart original com configuração customizada
+        
+        # Configuração básica do FireFly
+        config:
+          debugEnabled: true
+          adminEnabled: true
+          metricsEnabled: true
+          preInit: false
+          
+          # Organização
+          organizationName: "EITA"
+          organizationKey: "0x75a99473917701038e854ef6999c76cd947c9f9e"
+          
+          # Database PostgreSQL
+          postgresUrl: "postgres://postgres:Bigode%234104%21@postgres-postgresql.database.svc:5432/firefly_gateway?sslmode=disable"
+          postgresAutomigrate: true
+          
+          # EVMConnect URL
+          evmconnectUrl: "http://firefly-evmconnect:5000"
+          
+          # IPFS Configuration
+          ipfsApiUrl: "http://ipfs.ipfs.svc:5001"
+          ipfsGatewayUrl: "http://ipfs.ipfs.svc:8080"
+        
+        # Core FireFly configuration
+        core:
+          image:
+            repository: ghcr.io/italoag/firefly
+            tag: "latest-arm64"
+            pullPolicy: Always
+          
+          nodeSelector:
+            kubernetes.io/arch: arm64
+          
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+        
+        # Disable dataexchange for gateway mode
+        dataexchange:
+          enabled: false
+        
+        # FireFly Signer (já implantado separadamente)
+        signer:
+          enabled: false
+        
+        # EVMConnect
+        evmconnect:
+          enabled: true
+          image:
+            repository: ghcr.io/hyperledger/firefly-evmconnect
+            tag: "v1.3.20"
+            pullPolicy: Always
+          
+          nodeSelector:
+            kubernetes.io/arch: arm64
+          
+          config:
+            jsonRpcUrl: "http://firefly-signer.firefly-gateway.svc:8545"
+            policyEngine: |
+              policyengine.simple:
+                fixedGasPrice: "0"
+                resubmitInterval: 5m
+                gasOracle:
+                  mode: fixed
+        
+        # ERC1155 Token Connector
+        erc1155:
+          enabled: true
+          image:
+            repository: ghcr.io/hyperledger/firefly-tokens-erc1155
+            tag: "v1.3.4"
+            pullPolicy: Always
+          
+          nodeSelector:
+            kubernetes.io/arch: arm64
+        
+        # ERC20/ERC721 Token Connector
+        erc20erc721:
+          enabled: true
+          image:
+            repository: ghcr.io/hyperledger/firefly-tokens-erc20-erc721
+            tag: "v1.3.4"
+            pullPolicy: Always
+          
+          nodeSelector:
+            kubernetes.io/arch: arm64
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: firefly-gateway # Namespace onde o Firefly será implantado
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

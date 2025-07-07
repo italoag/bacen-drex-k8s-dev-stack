@@ -1,0 +1,9 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: firefly-api-rewrite
+  namespace: firefly-gateway
+spec:
+  stripPrefix:
+    prefixes:
+      - "/firefly-api"
