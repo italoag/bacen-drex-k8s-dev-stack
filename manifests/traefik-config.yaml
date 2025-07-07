@@ -1,0 +1,42 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    logs:
+      level: INFO
+      access:
+        enabled: true
+    #service:
+    #  spec:
+    #    externalTrafficPolicy: Local
+
+    #dashboard:
+    #  enabled: true
+
+    #deployment:
+    #  kind: DaemonSet
+    #hostNetwork: true
+
+    #updateStrategy:
+    #  type: RollingUpdate
+    #  rollingUpdate:
+    #    maxUnavailable: 2
+    #    maxSurge:
+
+    additionalArguments:
+    - "--api.insecure=true"
+    #  - "--entryPoints.web.proxyProtocol.insecure"
+    #  - "--entryPoints.websecure.proxyProtocol.insecure"
+    #  - "--entryPoints.web.proxyProtocol.trustedIPs=123.123.123.123"
+
+# See https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml for more examples
+# The deployment.kind=DaemonSet and hostNetwork=true is to get real ip and x-forwarded for,
+# and can be omitted if this is not needed.
+
+# The updateStrategy settings are required for the latest traefik helm version when using hostNetwork.
+# see more here: https://github.com/traefik/traefik-helm-chart/blob/v20.8.0/traefik/templates/daemonset.yaml#L12-L14
+# but this version not yet supported by k3s, so leaving it commented out for now.
+# The config above has been tested to work with latest stable k3s (v1.25.4+k3s1).

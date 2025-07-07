@@ -1,0 +1,6 @@
+confirmations:
+  required: 1
+policyengine.simple:
+  fixedGasPrice: 0
+  gasOracle:
+    mode: connector

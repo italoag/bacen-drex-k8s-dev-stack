@@ -1,0 +1,21 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dashboard
+  namespace: default  # ou o namespace onde o Traefik está rodando
+spec:
+  entryPoints:
+    - websecure  # Utilize somente o entrypoint seguro, se for o caso
+  routes:
+    - match: Host(`traefik.cluster.eita.cloud`)
+      kind: Rule
+      services:
+        - name: api@internal
+          kind: TraefikService
+      middlewares:
+        - name: my-basic-auth
+          # Se o middleware estiver em outro namespace, qualifique-o:
+          # namespace: kube-system
+  tls:
+    secretName: traefik-tls
+

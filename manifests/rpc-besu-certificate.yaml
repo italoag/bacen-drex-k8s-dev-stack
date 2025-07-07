@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rpc-besu-cert
+  namespace: paladin
+spec:
+  secretName: rpc-besu-tls
+  issuerRef:
+    name: letsencrypt-certmanager
+    kind: ClusterIssuer
+  commonName: rpc-besu.cluster.eita.cloud
+  dnsNames:
+    - rpc-besu.cluster.eita.cloud
+

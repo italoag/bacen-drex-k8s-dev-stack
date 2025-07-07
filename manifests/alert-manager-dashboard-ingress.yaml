@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: alert-manager-ingress
+  namespace: cattle-monitoring-system
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-certmanager
+    traefik.ingress.kubernetes.io/router.middlewares: default-my-basic-auth@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: alert-manager.cluster.eita.cloud
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: rancher-monitoring-alertmanager
+            port:
+              number: 9093
+  tls:
+    - secretName: alert-manager-tls
+      hosts:
+        - alert-manager.cluster.eita.cloud

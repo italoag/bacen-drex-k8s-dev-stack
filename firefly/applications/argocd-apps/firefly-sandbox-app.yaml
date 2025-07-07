@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: firefly-sandbox
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: firefly-sandbox
+    app.kubernetes.io/part-of: firefly-gateway
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/italoag/bacen-drex-k8s-dev-stack.git
+    targetRevision: main
+    path: firefly/applications
+    directory:
+      include: "firefly-sandbox.yaml"
+      recurse: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: firefly-gateway
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  revisionHistoryLimit: 10

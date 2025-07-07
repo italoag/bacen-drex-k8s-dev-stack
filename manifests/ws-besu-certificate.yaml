@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ws-besu-cert
+  namespace: paladin
+spec:
+  secretName: ws-besu-tls
+  issuerRef:
+    name: letsencrypt-certmanager
+    kind: ClusterIssuer
+  commonName: ws-besu.cluster.eita.cloud
+  dnsNames:
+    - ws-besu.cluster.eita.cloud
+

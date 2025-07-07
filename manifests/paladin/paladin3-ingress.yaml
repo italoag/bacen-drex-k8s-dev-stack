@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: paladin3-ingress
+  namespace: paladin
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+spec:
+  tls:
+  - hosts:
+    - paladin3.cluster.eita.cloud
+    secretName: paladin3-tls  # Esse secret será criado automaticamente pelo cert-manager
+  rules:
+  - host: paladin3.cluster.eita.cloud
+    http:
+      paths:
+        # Regra para servir a UI e API (HTTP)
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node3
+              port:
+                number: 8548
+        # Regra para atender o endpoint WebSocket
+        - path: /ws
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node3
+              port:
+                number: 8549
+        # Regra para atender o endpoint gRPC (se for necessário pela UI)
+        - path: /grpc
+          pathType: Prefix
+          backend:
+            service:
+              name: paladin-node3
+              port:
+                number: 9000
+

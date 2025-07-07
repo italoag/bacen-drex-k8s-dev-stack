@@ -1,0 +1,23 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: rpc-besu-ingress
+  namespace: paladin
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+spec:
+  tls:
+    secretName: rpc-besu-tls   # O cert-manager criará esse secret com o certificado
+  routes:
+    - match: Host(`rpc-besu.cluster.eita.cloud`)
+      kind: Rule
+      services:
+        - name: besu-node1
+          port: 8545
+        - name: besu-node2
+          port: 8545
+        - name: besu-node3
+          port: 8545
+
