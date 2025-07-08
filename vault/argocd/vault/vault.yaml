@@ -12,7 +12,7 @@ spec:
     namespace: argocd
   source:
     repoURL: https://github.com/eitatech/deployments.git
-    path: argocd/apps/vault/applications
+    path: vault/argocd/vault/applications
     targetRevision: main
     directory:
       recurse: false

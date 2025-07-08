@@ -11,11 +11,12 @@ spec:
     - match: Host(`rpc-besu.cluster.eita.cloud`)
       kind: Rule
       services:
-        - name: besu-rpc-lb@kubernetescrd
+        - name: besu-rpc-lb
+          kind: TraefikService
       middlewares:
         - name: besu-retry-middleware
   tls:
-    certResolver: default
+    secretName: rpc-besu-tls
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -30,12 +31,13 @@ spec:
     - match: Host(`ws-besu.cluster.eita.cloud`)
       kind: Rule
       services:
-        - name: besu-ws-lb@kubernetescrd
+        - name: besu-ws-lb
+          kind: TraefikService
       middlewares:
         - name: besu-ws-middleware
         - name: besu-retry-middleware
   tls:
-    certResolver: default
+    secretName: ws-besu-tls
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -50,8 +52,9 @@ spec:
     - match: Host(`graphql-besu.cluster.eita.cloud`)
       kind: Rule
       services:
-        - name: besu-graphql-lb@kubernetescrd
+        - name: besu-graphql-lb
+          kind: TraefikService
       middlewares:
         - name: besu-retry-middleware
   tls:
-    certResolver: default
+    secretName: graphql-besu-tls

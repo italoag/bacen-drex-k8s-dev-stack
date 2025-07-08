@@ -3,7 +3,12 @@ kind: Job
 metadata:
   name: vault-init-unseal-job
   namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: init-job
 spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 600
   template:
     spec:
       serviceAccountName: vault-init-unseal

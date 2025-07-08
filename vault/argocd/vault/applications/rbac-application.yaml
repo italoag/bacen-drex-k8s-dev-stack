@@ -3,8 +3,12 @@ kind: Application
 metadata:
   name: vault-rbac
   namespace: argocd
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: rbac
   annotations:
     argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
 spec:
   project: default
   destination:
@@ -12,7 +16,7 @@ spec:
     namespace: vault
   source:
     repoURL: https://github.com/eitatech/deployments.git
-    path: argocd/apps/vault/resources
+    path: vault/argocd/vault/resources
     targetRevision: main
     directory:
       include: "rbac.yaml"
@@ -20,5 +24,11 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
   dependencies:
     - vault-app-dev

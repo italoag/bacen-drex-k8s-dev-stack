@@ -3,8 +3,13 @@ kind: Application
 metadata:
   name: vault-init-unseal
   namespace: argocd
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: init-job
   annotations:
     argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
+    argocd.argoproj.io/sync-options: Replace=true
 spec:
   project: default
   destination:
@@ -12,7 +17,7 @@ spec:
     namespace: vault
   source:
     repoURL: https://github.com/eitatech/deployments.git
-    path: argocd/apps/vault/resources
+    path: vault/argocd/vault/resources
     targetRevision: main
     directory:
       include: "init-unseal-job.yaml"
@@ -20,5 +25,11 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
   dependencies:
     - vault-rbac
