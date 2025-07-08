@@ -1,0 +1,31 @@
+# scylla/values.yaml
+datacenter:
+  # nome lógico do datacenter
+  name: oc-dc
+  racks:
+    - name: oc-rack
+      # número de réplicas (scylla nodes) – usar 1 para dev/test
+      members: 1
+      storage:
+        # PV de 1Gi para dev/test
+        capacity: 1Gi
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: 1
+          memory: 1Gi
+
+# opcional: habilitar métricas para Prometheus
+scylla:
+  prometheus:
+    enabled: true
+
+# imagens customizadas (se quiser travar versão)
+scyllaImage:
+  repository: scylladb/scylla
+  tag: 5.0.9
+agentImage:
+  repository: scylladb/scylla-manager-agent
+  tag: 2.5.0

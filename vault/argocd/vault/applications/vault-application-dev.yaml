@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault-app-dev
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: vault-server
+    app.kubernetes.io/instance: dev
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
+    argocd.argoproj.io/sync-options: Prune=false
+spec:
+  project: default
+  
+  # Health check personalizado para Vault
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/template/spec/containers/0/image
+        - /spec/replicas
+  
+  # Informações do projeto
+  info:
+    - name: Description
+      value: "HashiCorp Vault deployment for secrets management"
+    - name: Environment
+      value: "Development"
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  
+  source:
+    repoURL: https://helm.releases.hashicorp.com
+    chart: vault
+    targetRevision: 0.30.0
+    
+    # Configuração do Helm
+    helm:
+      releaseName: vault
+      
+      # Values files externos para melhor organização
+      valueFiles:
+        - https://raw.githubusercontent.com/eitatech/deployments/main/vault/argocd/vault/values/base.yaml
+        - https://raw.githubusercontent.com/eitatech/deployments/main/vault/argocd/vault/values/dev.yaml
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

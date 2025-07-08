@@ -1,0 +1,24 @@
+# scylla/argocd-application.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: scylla
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/italoag/bacen-drex-k8s-dev-stack.git'
+    targetRevision: main
+    path: scylla
+    helm:
+      # nome do release no cluster
+      releaseName: scylla
+      valueFiles:
+        - values.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: scylla
+  syncPolicy:
+    automated:
+      prune: true      # remove recursos não mais presentes no Git
+      selfHeal: true   # corrige drift automaticamente
