@@ -19,8 +19,8 @@ spec:
           multipartyEnabled: true
 
           # URLs públicas para que o FireFly retorne endpoints HTTPS corretos
-          httpPublicUrl: "https://firefly-multiparty.cluster.eita.cloud"
-          adminPublicUrl: "https://firefly-multiparty.cluster.eita.cloud"
+          httpPublicUrl: "https://firefly.cluster.eita.cloud"
+          adminPublicUrl: "https://firefly.cluster.eita.cloud"
 
           organizationName: "EITA"
           organizationKey: "0x75a99473917701038e854ef6999c76cd947c9f9e"
