@@ -116,6 +116,11 @@ spec:
               ffUrl: "http://firefly:5000"
               ffNamespaces:
                 - default
+            registration:
+              enabled: true
+              ffUrl: "http://firefly:5000"
+              ffNamespaces:
+                - default
 
         dataexchange:
           enabled: true
