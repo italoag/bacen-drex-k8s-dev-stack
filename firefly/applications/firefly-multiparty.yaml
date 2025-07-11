@@ -27,6 +27,9 @@ spec:
           
           fireflyContractAddress: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
           fireflyContractFirstEvent: 0
+          fireflyContracts:
+            - address: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
+              firstEvent: 0
 
           evmconnectUrl: "http://firefly-evmconnect:5000"
           
@@ -35,7 +38,6 @@ spec:
           ethconnectPrefixShort: "fly"
           ethconnectPrefixLong: "firefly"
           ethconnectRetry: true
-          ethconnectInstance: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
           
           postgresUrl: "postgres://postgres:Bigode%231404%21@postgres-postgresql.database.svc:5432/firefly?sslmode=disable"
           postgresAutomigrate: true
