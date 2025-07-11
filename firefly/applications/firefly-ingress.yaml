@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: firefly-gateway-ingress
-  namespace: firefly-gateway
+  name: firefly-ingress
+  namespace: firefly
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
     traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
@@ -11,7 +11,7 @@ spec:
   tls:
   - hosts:
     - firefly.cluster.eita.cloud
-    secretName: firefly-gateway-tls  # Esse secret será criado automaticamente pelo cert-manager
+    secretName: firefly-tls  # Esse secret será criado automaticamente pelo cert-manager
   rules:
   - host: firefly.cluster.eita.cloud
     http:
@@ -21,7 +21,7 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: firefly-gateway
+              name: firefly
               port:
                 number: 5000
         # Regra para servir a UI FireFly Core (HTTP)
@@ -29,7 +29,7 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: firefly-gateway
+              name: firefly
               port:
                 number: 5000
         # Regra para servir métricas (Prometheus)
@@ -37,7 +37,7 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: firefly-gateway
+              name: firefly
               port:
                 number: 5100
 ---
@@ -45,7 +45,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: firefly-sandbox-ingress
-  namespace: firefly-gateway
+  namespace: firefly
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-certmanager"
     traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
@@ -64,7 +64,7 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: firefly-gateway-sandbox
+              name: firefly-sandbox
               port:
                 number: 3001
         # Regra para servir o Sandbox UI
@@ -72,6 +72,6 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: firefly-gateway-sandbox
+              name: firefly-sandbox
               port:
                 number: 3001
