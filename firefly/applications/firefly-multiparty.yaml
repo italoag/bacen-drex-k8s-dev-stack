@@ -30,6 +30,11 @@ spec:
 
           evmconnectUrl: "http://firefly-evmconnect:5000"
           
+          # Configurações do ethconnect
+          ethconnectTopic: "firefly"
+          ethconnectPrefixShort: "fly"
+          ethconnectPrefixLong: "firefly"
+          
           postgresUrl: "postgres://postgres:Bigode%231404%21@postgres-postgresql.database.svc:5432/firefly?sslmode=disable"
           postgresAutomigrate: true
 
@@ -62,6 +67,40 @@ spec:
               - name: wait-for-dx
                 image: busybox:1.36.1
                 command: ['sh', '-c', 'until nc -z firefly-dx 5000; do echo waiting for dx; sleep 2; done;']
+              - name: create-database
+                image: postgres:15
+                command: ['sh', '-c']
+                args:
+                  - |
+                    DB_NAME="firefly"
+                    USER_NAME="postgres"
+                    PSQL_SERVER="postgres://postgres:Bigode%231404%21@postgres-postgresql.database.svc:5432/postgres?sslmode=disable"
+                    PSQL_URL="postgres://postgres:Bigode%231404%21@postgres-postgresql.database.svc:5432/firefly?sslmode=disable"
+                    
+                    echo "Waiting for PostgreSQL server..."
+                    until psql "${PSQL_SERVER}" -c "SELECT 1;" > /dev/null 2>&1; do
+                      echo "PostgreSQL not ready, waiting..."
+                      sleep 2
+                    done
+                    
+                    echo "Checking if database exists..."
+                    if ! psql "${PSQL_SERVER}" -c "SELECT datname FROM pg_database WHERE datname = '${DB_NAME}';" | grep -q "${DB_NAME}"; then
+                      echo "Database '${DB_NAME}' does not exist; creating."
+                      psql "${PSQL_SERVER}" -c "CREATE DATABASE \"${DB_NAME}\" WITH OWNER \"${USER_NAME}\";"
+                    else
+                      echo "Database '${DB_NAME}' already exists."
+                    fi
+                    
+                    echo "Waiting for database to be available..."
+                    until psql "${PSQL_URL}" -c "SELECT 1;" > /dev/null 2>&1; do
+                      echo "Database not ready, waiting..."
+                      sleep 2
+                    done
+                    echo "Database is ready!"
+          
+          jobs:
+            postgresMigrations:
+              enabled: false
 
         dataexchange:
           enabled: true
@@ -130,8 +169,6 @@ spec:
             ethconnectTopic: "erc20erc721"
 
         jobs:
-          postgresMigrations:
-            enabled: true
           registration:
             enabled: true
             ffUrl: "http://firefly:5000"
