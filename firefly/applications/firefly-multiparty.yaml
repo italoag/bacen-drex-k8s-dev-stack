@@ -111,6 +111,11 @@ spec:
           jobs:
             postgresMigrations:
               enabled: false
+            registration:
+              enabled: true
+              ffUrl: "http://firefly:5000"
+              ffNamespaces:
+                - default
 
         dataexchange:
           enabled: true
@@ -183,15 +188,6 @@ spec:
           config:
             # ethconnectUrl: "http://firefly-gateway-evmconnect:5000"
             ethconnectTopic: "erc20erc721"
-
-        jobs:
-          registration:
-            enabled: true
-            ffUrl: "http://firefly:5000"
-            ffNamespaces:
-              - default
-            waitForFireflyStart: true
-            register: true
   destination:
     server: https://kubernetes.default.svc
     namespace: firefly # Namespace onde o Firefly será implantado
