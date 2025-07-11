@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/hyperledger/firefly-helm-charts.git # Substitua pelo seu repositório do chart, se for diferente
+    repoURL: https://github.com/italoag/firefly-helm-charts.git
     targetRevision: main
     path: charts/firefly
     helm:
@@ -15,18 +15,22 @@ spec:
           debugEnabled: true
           adminEnabled: true
           metricsEnabled: true
-          preInit: true
+          preInit: false
           multipartyEnabled: true
 
+          # URLs públicas para que o FireFly retorne endpoints HTTPS corretos
+          httpPublicUrl: "https://firefly-multiparty.cluster.eita.cloud"
+          adminPublicUrl: "https://firefly-multiparty.cluster.eita.cloud"
+
           organizationName: "EITA"
-          organizationKey: "0xeb7284ce905e0665b7d42cabe31c76c45da1d331"
+          organizationKey: "0x75a99473917701038e854ef6999c76cd947c9f9e"
           
-          fireflyContractAddress: "0xeb7284ce905e0665b7d42cabe31c76c45da1d254"
+          fireflyContractAddress: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
           fireflyContractFirstEvent: 0
 
           evmconnectUrl: "http://firefly-evmconnect:5000"
           
-          postgresUrl: "postgres://postgres:Bigode%234104%21@postgres-postgresql.database.svc:5432/firefly?sslmode=disable"
+          postgresUrl: "postgres://postgres:Bigode%231404%21@postgres-postgresql.database.svc:5432/firefly?sslmode=disable"
           postgresAutomigrate: true
 
           ipfsApiUrl: "http://ipfs.ipfs.svc:5001"
@@ -35,12 +39,36 @@ spec:
           addresssResolverUrlTemplate: "http://address-resolver.firefly-os/wallets/{{.Key}}"
 
         core:
+          image:
+            repository: ghcr.io/italoag/firefly
+            tag: "latest-arm64"
+            pullPolicy: IfNotPresent
+          
+          nodeSelector:
+            kubernetes.io/arch: arm64
+          
           metrics:
             serviceMonitor:
               enabled: true
+          livenessProbe:
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            failureThreshold: 6
+          readinessProbe:
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            failureThreshold: 6
+          initContainers: |
+              - name: wait-for-dx
+                image: busybox:1.36.1
+                command: ['sh', '-c', 'until nc -z firefly-dx 5000; do echo waiting for dx; sleep 2; done;']
 
         dataexchange:
           enabled: true
+          image:
+            repository: ghcr.io/italoag/firefly-dataexchange-https
+            tag: "latest-arm64"
+            pullPolicy: Always
           certificate:
             enabled: true
             issuerRef:
@@ -49,8 +77,9 @@ spec:
           tlsSecret:
             enabled: false
 
+        # Sandbox desabilitado temporariamente devido a health checks hardcoded no Helm chart
         sandbox:
-          enabled: true
+          enabled: false
 
         signer:
           enabled: true
@@ -58,7 +87,11 @@ spec:
         evmconnect:
           enabled: true
           image:
-            tag: v1.3.20
+            repository: ghcr.io/italoag/firefly-evmconnect
+            tag: "latest-arm64"
+            pullPolicy: Always
+          nodeSelector:
+            kubernetes.io/arch: arm64
           config:
             jsonRpcUrl: "http://firefly-signer.firefly.svc:8545"
             policyEngine: |
@@ -70,9 +103,40 @@ spec:
 
         erc1155:
           enabled: true
+          image:
+            repository: ghcr.io/italoag/firefly-tokens-erc1155
+            tag: "latest-arm64"
+            pullPolicy: Always
+          
+          nodeSelector:
+            kubernetes.io/arch: arm64
+          
+          config:
+            #cethconnectUrl: "http://firefly-gateway-evmconnect:5000"
+            ethconnectTopic: "erc1155"
 
         erc20erc721:
           enabled: true
+          image:
+            repository: ghcr.io/italoag/firefly-tokens-erc20-erc721
+            tag: "latest-arm64"
+            pullPolicy: Always
+          
+          nodeSelector:
+            kubernetes.io/arch: arm64
+          
+          config:
+            # ethconnectUrl: "http://firefly-gateway-evmconnect:5000"
+            ethconnectTopic: "erc20erc721"
+
+        jobs:
+          postgresMigrations:
+            enabled: true
+          registration:
+            enabled: true
+            ffUrl: "http://firefly:5000"
+            ffNamespaces:
+              - default
   destination:
     server: https://kubernetes.default.svc
     namespace: firefly # Namespace onde o Firefly será implantado

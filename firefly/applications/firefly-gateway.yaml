@@ -29,6 +29,7 @@ spec:
 
           organizationName: "EITA"
           organizationKey: "0x75a99473917701038e854ef6999c76cd947c9f9e"
+          fireflyContractAddress: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
           
           evmconnectUrl: "http://firefly-gateway-evmconnect:5000"
           
