@@ -34,6 +34,8 @@ spec:
           ethconnectTopic: "firefly"
           ethconnectPrefixShort: "fly"
           ethconnectPrefixLong: "firefly"
+          ethconnectRetry: true
+          ethconnectInstance: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
           
           postgresUrl: "postgres://postgres:Bigode%231404%21@postgres-postgresql.database.svc:5432/firefly?sslmode=disable"
           postgresAutomigrate: true
