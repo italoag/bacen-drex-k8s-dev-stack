@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: firefly-config
-  namespace: firefly-gateway
+  namespace: firefly
 data:
   firefly.core.yaml: |
     debug: true
@@ -21,7 +21,7 @@ data:
     database:
       type: postgres
       postgres:
-        url: "postgres://postgres:Bigode%234104%21@postgres-postgresql.database.svc:5432/firefly_gateway?sslmode=disable"
+        url: "postgres://postgres:Bigode%234104%21@postgres-postgresql.database.svc:5432/firefly?sslmode=disable"
         migrationsDirectory: "./db/migrations/postgres"
         migrationsAuto: true
     blockchain:
@@ -51,10 +51,13 @@ data:
           multiparty:
             enabled: false
             org:
-              name: "EITA"
+              name: "${FIREFLY_ORGANIZATION_NAME}:italo"
               key: "0x75a99473917701038e854ef6999c76cd947c9f9e"
             node:
-              name: "firefly-gateway"
+              name: "${FIREFLY_NODE_NAME}:italo-node"
+            contract:
+              location: "${FIRE_FLY_CONTRACT_LOCATION}:0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
+    
           plugins:
             - blockchain
             - sharedstorage

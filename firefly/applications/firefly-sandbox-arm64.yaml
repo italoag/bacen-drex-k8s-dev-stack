@@ -21,13 +21,15 @@ spec:
         app.kubernetes.io/instance: firefly
         app.kubernetes.io/component: sandbox
     spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
       initContainers:
         - name: wait-for-firefly
           image: busybox:1.36.1
           command: ['sh', '-c', 'until wget -q --spider http://firefly:5000/api/v1/status; do echo waiting for firefly; sleep 5; done; echo firefly is ready']
       containers:
         - name: firefly-sandbox
-          image: ghcr.io/hyperledger/firefly-sandbox:latest
+          image: ghcr.io/italoag/firefly-sandbox:latest-arm64
           imagePullPolicy: Always
           ports:
             - name: http

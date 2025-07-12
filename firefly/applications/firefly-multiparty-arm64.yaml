@@ -23,7 +23,7 @@ spec:
           httpPublicUrl: "https://firefly.cluster.eita.cloud"
           adminPublicUrl: "https://firefly.cluster.eita.cloud"
 
-          organizationName: "ITALO"
+          organizationName: "EITA"
           organizationKey: "0x75a99473917701038e854ef6999c76cd947c9f9e"
           
           fireflyContractAddress: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
@@ -53,11 +53,14 @@ spec:
           addresssResolverUrlTemplate: "http://address-resolver.firefly-os/wallets/{{.Key}}"
 
         core:
-          nodeNameOverride: "italo-node"
+          nodeNameOverride: "eita-node"
           image:
-            repository: ghcr.io/hyperledger/firefly
-            tag: "latest"
+            repository: ghcr.io/italoag/firefly
+            tag: "latest-arm64"
             pullPolicy: IfNotPresent
+          
+          nodeSelector:
+            kubernetes.io/arch: arm64
           
           metrics:
             serviceMonitor:
@@ -122,8 +125,8 @@ spec:
         dataexchange:
           enabled: true
           image:
-            repository: ghcr.io/hyperledger/firefly-dataexchange-https
-            tag: "latest"
+            repository: ghcr.io/italoag/firefly-dataexchange-https
+            tag: "latest-arm64"
             pullPolicy: Always
           certificate:
             enabled: true
@@ -137,9 +140,11 @@ spec:
         sandbox:
           enabled: true
           image:
-            repository: ghcr.io/hyperledger/firefly-sandbox
-            tag: "latest"
+            repository: ghcr.io/italoag/firefly-sandbox
+            tag: "latest-arm64"
             pullPolicy: Always
+          nodeSelector:
+            kubernetes.io/arch: arm64
 
         signer:
           enabled: true
@@ -147,9 +152,11 @@ spec:
         evmconnect:
           enabled: true
           image:
-            repository: ghcr.io/hyperledger/firefly-evmconnect
-            tag: "latest"
+            repository: ghcr.io/italoag/firefly-evmconnect
+            tag: "latest-arm64"
             pullPolicy: Always
+          nodeSelector:
+            kubernetes.io/arch: arm64
           config:
             jsonRpcUrl: "http://firefly-signer.firefly.svc:8545"
             policyEngine: |
@@ -162,9 +169,12 @@ spec:
         erc1155:
           enabled: true
           image:
-            repository: ghcr.io/hyperledger/firefly-tokens-erc1155
-            tag: "latest"
+            repository: ghcr.io/italoag/firefly-tokens-erc1155
+            tag: "latest-arm64"
             pullPolicy: Always
+          
+          nodeSelector:
+            kubernetes.io/arch: arm64
           
           config:
             #cethconnectUrl: "http://firefly-gateway-evmconnect:5000"
@@ -173,9 +183,12 @@ spec:
         erc20erc721:
           enabled: true
           image:
-            repository: ghcr.io/hyperledger/firefly-tokens-erc20-erc721
-            tag: "latest"
+            repository: ghcr.io/italoag/firefly-tokens-erc20-erc721
+            tag: "latest-arm64"
             pullPolicy: Always
+          
+          nodeSelector:
+            kubernetes.io/arch: arm64
           
           config:
             # ethconnectUrl: "http://firefly-gateway-evmconnect:5000"
