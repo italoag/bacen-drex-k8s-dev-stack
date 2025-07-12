@@ -5,6 +5,7 @@
 ### 1. Configurações Corrigidas no firefly-multiparty.yaml
 
 #### 1.1 Configurações Básicas
+
 ```yaml
 config:
   defaultBlockchainType: ethereum  # Essencial para templates corretos
@@ -16,6 +17,7 @@ config:
 ```
 
 #### 1.2 Configurações de Conectividade IPFS (CORRIGIDAS)
+
 ```yaml
 config:
   # URLs corretas para o serviço IPFS no namespace firefly
@@ -24,6 +26,7 @@ config:
 ```
 
 #### 1.3 Configurações do EVMConnect
+
 ```yaml
 config:
   evmconnectUrl: "http://firefly-evmconnect:5000"
@@ -34,6 +37,7 @@ config:
 ```
 
 #### 1.4 Configurações de Timeout
+
 ```yaml
 config:
   httpRequestTimeout: 600s
@@ -41,6 +45,7 @@ config:
 ```
 
 #### 1.5 Configurações do Contrato
+
 ```yaml
 config:
   fireflyContractAddress: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
@@ -53,12 +58,14 @@ config:
 ### 2. Configurações do Core
 
 #### 2.1 Nome Customizado do Node
+
 ```yaml
 core:
   nodeNameOverride: "eita-node"  # Sobrescreve o nome padrão
 ```
 
 #### 2.2 Job de Registro Automático (ESSENCIAL)
+
 ```yaml
 core:
   jobs:
