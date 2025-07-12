@@ -11,9 +11,9 @@ spec:
   source:
     repoURL: https://github.com/italoag/bacen-drex-k8s-dev-stack.git
     targetRevision: main
-    path: firefly/applications
+    path: firefly/argocd
     directory:
-      include: "firefly-sandbox.yaml"
+      include: "values/firefly-sandbox.yaml"
       recurse: false
   destination:
     server: https://kubernetes.default.svc

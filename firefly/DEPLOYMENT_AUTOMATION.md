@@ -11,8 +11,8 @@ config:
   multipartyEnabled: true
   
   # Nome da organização e chave
-  organizationName: "EITA"
-  organizationKey: "0x75a99473917701038e854ef6999c76cd947c9f9e"
+  organizationName: "minhaOrg"
+  organizationKey: "0xKey......"
 ```
 
 #### 1.2 Configurações de Conectividade IPFS (CORRIGIDAS)

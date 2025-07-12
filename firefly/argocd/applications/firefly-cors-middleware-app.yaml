@@ -1,19 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: firefly-ingress
+  name: firefly-cors-middleware
   namespace: argocd
   labels:
-    app.kubernetes.io/name: firefly-ingress
+    app.kubernetes.io/name: firefly-cors-middleware
     app.kubernetes.io/part-of: firefly
 spec:
   project: default
   source:
     repoURL: https://github.com/italoag/bacen-drex-k8s-dev-stack.git
     targetRevision: main
-    path: firefly/applications
+    path: firefly/argocd
     directory:
-      include: "firefly-ingress.yaml"
+      include: "values/firefly-cors-middleware.yaml"
       recurse: false
   destination:
     server: https://kubernetes.default.svc

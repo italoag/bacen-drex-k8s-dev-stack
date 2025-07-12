@@ -1,0 +1,139 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: firefly-gateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/italoag/firefly-helm-charts.git
+    targetRevision: main
+    path: charts/firefly
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        # FireFly Gateway Values - ARM64 Custom Setup
+        # Baseado no local-kind-values.yaml que funciona
+        
+        config:
+          debugEnabled: true
+          adminEnabled: true
+          metricsEnabled: true
+          preInit: false
+          multipartyEnabled: false
+
+          # URLs públicas para que o FireFly retorne endpoints HTTPS corretos
+          httpPublicUrl: "https://firefly.cluster.eita.cloud"
+          adminPublicUrl: "https://firefly.cluster.eita.cloud"
+
+          organizationName: "EITA"
+          organizationKey: "0x75a99473917701038e854ef6999c76cd947c9f9e"
+          fireflyContractAddress: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
+          
+          evmconnectUrl: "http://firefly-gateway-evmconnect:5000"
+          
+          postgresUrl: "postgres://postgres:Bigode%231404%21@postgres-postgresql.database.svc:5432/firefly_gateway?sslmode=disable"
+          postgresAutomigrate: true
+
+          ipfsApiUrl: "http://ipfs.firefly.svc:5001"
+          ipfsGatewayUrl: "http://ipfs.firefly.svc:8080"
+
+        core:
+          image:
+            repository: ghcr.io/hyperledger/firefly
+            tag: "latest"
+            pullPolicy: IfNotPresent
+          
+          metrics:
+            serviceMonitor:
+              enabled: false
+          livenessProbe:
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            failureThreshold: 6
+          readinessProbe:
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            failureThreshold: 6
+          initContainers: |
+              - name: wait-for-dx
+                image: busybox:1.36.1
+                command: ['sh', '-c', 'until nc -z firefly-gateway-dx 5000; do echo waiting for dx; sleep 2; done;']
+
+        # IMPORTANTE: Dataexchange precisa estar habilitado mas configurado corretamente
+        dataexchange:
+          enabled: true
+          image:
+            repository: ghcr.io/hyperledger/firefly-dataexchange-https
+            tag: "latest"
+            pullPolicy: Always
+          certificate:
+            enabled: true
+            issuerRef:
+              kind: ClusterIssuer
+              name: selfsigned-ca
+          tlsSecret:
+            enabled: false
+
+        # Sandbox desabilitado temporariamente devido a health checks hardcoded no Helm chart
+        sandbox:
+          enabled: false
+
+        # Signer desabilitado (já implantado separadamente)
+        signer:
+          enabled: true
+
+        evmconnect:
+          enabled: true
+          image:
+            repository: ghcr.io/hyperledger/firefly-evmconnect
+            tag: "latest"
+            pullPolicy: Always
+          
+          config:
+            jsonRpcUrl: "http://firefly-signer.firefly.svc:8545"
+            policyEngine: |
+              policyengine.simple:
+                fixedGasPrice: "0"
+                resubmitInterval: 5m
+                gasOracle:
+                  mode: fixed
+
+        erc1155:
+          enabled: true
+          image:
+            repository: ghcr.io/hyperledger/firefly-tokens-erc1155
+            tag: "latest"
+            pullPolicy: Always
+          
+          config:
+            #cethconnectUrl: "http://firefly-gateway-evmconnect:5000"
+            ethconnectTopic: "erc1155"
+
+        erc20erc721:
+          enabled: true
+          image:
+            repository: ghcr.io/hyperledger/firefly-tokens-erc20-erc721
+            tag: "latest"
+            pullPolicy: Always
+          
+          config:
+            # ethconnectUrl: "http://firefly-gateway-evmconnect:5000"
+            ethconnectTopic: "erc20erc721"
+
+        jobs:
+          registration:
+            enabled: true
+            ffUrl: "http://firefly-gateway:5000"
+            ffNamespaces:
+              - default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: firefly-gateway # Namespace onde o Firefly será implantado
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

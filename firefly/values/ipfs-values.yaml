@@ -89,7 +89,7 @@ ingress:
   className: ""
   annotations: {}
   hosts:
-    - host: ipfs.local
+    - host: ipfs.rd
       paths:
         - path: /
           pathType: Prefix

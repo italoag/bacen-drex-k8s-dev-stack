@@ -40,9 +40,9 @@ data:
     sharedstorage:
       ipfs:
         api:
-          url: "http://ipfs.ipfs.svc:5001"
+          url: "http://ipfs.firefly.svc:5001"
         gateway:
-          url: "http://ipfs.ipfs.svc:8080"
+          url: "http://ipfs.firefly.svc:8080"
     namespaces:
       default: "default"
       predefined:

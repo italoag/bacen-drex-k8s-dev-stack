@@ -1,58 +1,84 @@
-# firefly-gateway-values.yaml
-# Configuração para o nó gateway do FireFly baseada no local-kind-values.yaml
-
-# Configurações principais
 config:
   debugEnabled: true
   adminEnabled: true
   metricsEnabled: true
-  preInit: true
-  multipartyEnabled: false  # Gateway não precisa de multiparty
+  preInit: false
+  multipartyEnabled: false
 
-  # Configurações da organização
-  organizationName: "EITA"
+  # URLs públicas para que o FireFly retorne endpoints HTTPS corretos
+  httpPublicUrl: "https://firefly.cluster.eita.cloud"
+  adminPublicUrl: "https://firefly.cluster.eita.cloud"
+
+  organizationName: "italo"
   organizationKey: "0x75a99473917701038e854ef6999c76cd947c9f9e"
-  
-  # Configuração do contrato Firefly (ajustar conforme necessário)
-  fireflyContractAddress: "0xeb7284ce905e0665b7d42cabe31c76c45da1d254"
+  fireflyContractAddress: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
   fireflyContractFirstEvent: 0
-
-  # Configurações de conectividade
-  evmconnectUrl: "http://firefly-evmconnect:5000"
+  fireflyContracts:
+    - address: "0xDEdB3f6382B73129Ad3f72AD737F348b44Ffc749"
+      firstEvent: 0
   
-  # Configurações do banco de dados
-  postgresUrl: "postgres://postgres:Bigode%234104%21@postgres-postgresql.database.svc:5432/firefly_gateway?sslmode=disable"
+  evmconnectUrl: "http://firefly-gateway-evmconnect:5000"
+  
+  postgresUrl: "postgres://postgres:Bigode%231404%21@postgres-postgresql.database.svc:5432/firefly_gateway?sslmode=disable"
   postgresAutomigrate: true
 
-  # Configurações do IPFS
-  ipfsApiUrl: "http://ipfs.ipfs.svc:5001"
-  ipfsGatewayUrl: "http://ipfs.ipfs.svc:8080"
+  ipfsApiUrl: "http://ipfs.firefly.svc:5001"
+  ipfsGatewayUrl: "http://ipfs.firefly.svc:8080"
 
-# Configurações do core
 core:
+  image:
+    repository: ghcr.io/hyperledger/firefly
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  
   metrics:
     serviceMonitor:
-      enabled: true
+      enabled: false
+  livenessProbe:
+    initialDelaySeconds: 300
+    periodSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    initialDelaySeconds: 300
+    periodSeconds: 10
+    failureThreshold: 6
+  initContainers: |
+      - name: wait-for-dx
+        image: busybox:1.36.1
+        command: ['sh', '-c', 'until nc -z firefly-gateway-dx 5000; do echo waiting for dx; sleep 2; done;']
 
-# Configurações do DataExchange (desabilitado para gateway)
+# IMPORTANTE: Dataexchange precisa estar habilitado mas configurado corretamente
 dataexchange:
+  enabled: true
+  image:
+    repository: ghcr.io/hyperledger/firefly-dataexchange-https
+    tag: "latest"
+    pullPolicy: Always
+  certificate:
+    enabled: true
+    issuerRef:
+      kind: ClusterIssuer
+      name: selfsigned-ca
+  tlsSecret:
+    enabled: false
+
+# Sandbox desabilitado temporariamente devido a health checks hardcoded no Helm chart
+sandbox:
   enabled: false
 
-# Configurações do sandbox
-sandbox:
-  enabled: true
-
-# Configurações do signer
+# Signer desabilitado (já implantado separadamente)
 signer:
   enabled: true
 
-# Configurações do EVMConnect
 evmconnect:
   enabled: true
   image:
-    tag: v1.3.20
+    repository: ghcr.io/hyperledger/firefly-evmconnect
+    tag: "latest"
+    pullPolicy: Always
+  
   config:
-    jsonRpcUrl: "http://firefly-signer.firefly-gateway.svc:8545"
+    jsonRpcUrl: "http://firefly-signer.firefly.svc:8545"
     policyEngine: |
       policyengine.simple:
         fixedGasPrice: "0"
@@ -60,10 +86,31 @@ evmconnect:
         gasOracle:
           mode: fixed
 
-# Configurações dos contratos ERC
 erc1155:
   enabled: true
+  image:
+    repository: ghcr.io/hyperledger/firefly-tokens-erc1155
+    tag: "latest"
+    pullPolicy: Always
+  
+  config:
+    #cethconnectUrl: "http://firefly-gateway-evmconnect:5000"
+    ethconnectTopic: "erc1155"
 
 erc20erc721:
   enabled: true
+  image:
+    repository: ghcr.io/hyperledger/firefly-tokens-erc20-erc721
+    tag: "latest"
+    pullPolicy: Always
+  
+  config:
+    # ethconnectUrl: "http://firefly-gateway-evmconnect:5000"
+    ethconnectTopic: "erc20erc721"
 
+jobs:
+  registration:
+    enabled: true
+    ffUrl: "http://firefly-gateway:5000"
+    ffNamespaces:
+      - default
